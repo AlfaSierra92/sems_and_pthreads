@@ -31,9 +31,9 @@ int main(int argc, char **argv){
         }
         if(pid == 0){
             //processo figlio
-            fwrite=malloc(sizeof(argv[i+1])+6);
-            strcpy(fwrite,argv[i+1]);
-            strcat(fwrite,".sort");
+            fwrite=malloc(sizeof(argv[i+1])+6); //creo una nuova stringa a cui aggiungerò il suffisso .sort
+            strcpy(fwrite,argv[i+1]); //copio il contenuto di argv[i+1] in essa (il nome del file)
+            strcat(fwrite,".sort"); //e aggiungo il prefisso
             fd = creat(fwrite, PERM);
             close(fd);
 
