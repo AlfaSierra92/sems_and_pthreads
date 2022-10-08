@@ -1,6 +1,7 @@
 /*Scrivere un programma padreFigliNipotiConExec.c che deve prevedere un numero variabile N di 
 parametri (con N maggiore o uguale a 3, da controllare) che rappresentano nomi di file (F1, F2. ... FN). Il 
-processo padre deve generare N processi figli (P0, P1, … PN-1): i processi figli Pi (con i che varia da 0 a N1) sono associati agli N file Ff (con f = i+1). Ogni processo figlio Pi deve, per prima cosa, creare un file FOut
+processo padre deve generare N processi figli (P0, P1, … PN-1): i processi figli Pi (con i che varia da 0 a N1) 
+sono associati agli N file Ff (con f = i+1). Ogni processo figlio Pi deve, per prima cosa, creare un file FOut
 il cui nome deve risultare dalla concatenazione del nome del file associato Ff con la stringa “.sort”. Quindi, 
 ogni processo figlio Pi deve creare a sua volta un processo nipote PPi: ogni processo nipote PPi esegue 
 concorrentemente e deve ordinare il file Ff secondo il normale ordine alfabetico usando in modo 
@@ -24,7 +25,7 @@ int main(int argc, char **argv){
     int i;
     int n;
     int pid;
-    int pid_nipote;
+    int pid_nipote, status;
     char buffer[BUFSIZ];
     char error[BUFSIZ]; 
     char *fwrite;
@@ -75,6 +76,19 @@ int main(int argc, char **argv){
                 exit(-1);
             }
         }
+        pid_nipote = wait(&status);
+        if ((status & 0xFF) != 0){
+            sprintf(error, "Nipote con pid %d terminato in modo anomalo\n", pid);
+			perror(error);
+            exit(-1);
+        } else {
+            int ritorno=(int)((status >> 8) & 0xFF);
+            exit(ritorno);
+        }
+    }
+
+    for (i=0; i < nchildren; i++){
+        pid = wait(&status);
     }
 
 
