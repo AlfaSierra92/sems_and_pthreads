@@ -1,3 +1,14 @@
+/*
+ Scrivere un programma padreFigliConConteggioOccorrenze.c che deve prevedere un numero variabile 
+N+1 di parametri: i primi N (con N maggiore o uguale a 2, da controllare) che rappresentano N nomi di 
+file (F1, F2. ... FN), mentre l’ultimo rappresenta un singolo carattere Cx (da controllare). Il processo padre 
+deve generare N processi figli (P0, P1, … PN-1): i processi figli Pi (con i che varia da 0 a N-1) sono associati 
+agli N file Ff (con f = i+1). Ogni processo figlio Pi deve leggere dal file associato contando le occorrenze del 
+carattere Cx. 
+Al termine, ogni processo figlio Pi deve ritornare al padre il numero di occorrenze (NOTA BENE: si può 
+supporre minore di 255) e il padre deve stampare su standard output il PID di ogni figlio e il valore 
+ritornato.
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

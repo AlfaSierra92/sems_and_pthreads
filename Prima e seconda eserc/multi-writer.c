@@ -1,3 +1,13 @@
+/*Scrivere un programma in C, multi-writer.c, che deve considerare 3 parametri (strettamente
+maggiori di 0): numero di processi (nchildren), numero di blocchi (nblocks) e dimensione del
+blocco (blocksize). Il padre deve creare nchildren figli; ognuno dei figli deve scrivere, CON UNA
+SINGOLA WRITE, un blocco di byte di dimensione blocksize per nblocks volte sullo standard
+output. Una volta che tutti i figli abbiano terminato la scrittura (e quindi siano terminati), il padre
+deve verificare che la lunghezza dello standard output sia uguale a quella attesa
+(nblocks*blocksize). Provare il funzionamento del programma utilizzando esclusivamente la
+ridirezione in output; si suggerisce la seguente invocazione
+$ multi_writer 10 10000 1000 > log
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
