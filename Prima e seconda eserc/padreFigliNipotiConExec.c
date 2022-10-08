@@ -44,18 +44,18 @@ int main(int argc, char **argv){
             if(pid_nipote == 0){
                 //processo nipote
                 close(0);
-                if (open(argv[i+1], O_RDONLY)<0){
+                if (open(argv[i+1], O_RDONLY)<0){ //file in lettura
                     sprintf(error, "Errore: FILE %s NON ESISTE\n", argv[i+1]);
 				    perror(error);
                     exit(-1);
-                } //file in lettura
+                } 
                 
                 close(1);
-                if (open(fwrite, O_WRONLY)<0){
+                if (open(fwrite, O_WRONLY)<0){ //file in scrittura
                     sprintf(error, "Errore: FILE NON si riesce ad aprire in scrittura\n");
 				    perror(error);
                     exit(-1);
-                } //file in scrittura
+                } 
 
                 execlp("sort","sort",(char *)0);
 
