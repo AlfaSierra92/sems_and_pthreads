@@ -21,11 +21,14 @@ input.txt, aggiungendo o togliendo informazioni, quindi provare di nuovo il funz
 #include <fcntl.h>
 #include <sys/wait.h>
 
+#define MSGSIZE 5
+
 int main(int argc, char **argv){
-    char buffer[5];
+    char buffer[MSGSIZE];
     int pid=0;
     int pipe_fd[2];
     int fd=0;
+    int status;
     int read_count=0;
 
     if (argc > 2){
@@ -41,23 +44,33 @@ int main(int argc, char **argv){
     }
 
     if(pid == 0){
+        close(pipe_fd[0]); 	/* il figlio CHIUDE il lato di lettura: QUINDI SI CLASSIFICA COME SCRITTORE DELLA PIPE */
         fd = open(argv[1], O_RDONLY);
         if (fd<0) {
             printf("Error! File not exists.\n");
             perror("Error");
             exit(1);
         }
-        while(read(fd, buffer, 5) != 0){
-            strcpy(&buffer[4],"\0");
+        while(read(fd, buffer, MSGSIZE) != 0){
+            //printf("Bau");
+            //if(strcmp(buffer[0],"\n")) break;
+            if(&buffer[0] == "\n") break;
+            strcpy(&buffer[MSGSIZE-1],"\0");
             write(pipe_fd[1],buffer,5);
             read_count++;
         }
-        printf("Ho letto %d volte\n",read_count);
+        printf("Il figlio ha letto %d volte\n",read_count);
     }
 
+    close(pipe_fd[1]); 	/* il padrfe CHIUDE il lato di scrittura: QUINDI SI CLASSIFICA COME lettore DELLA PIPE */
+    int pid_nipote = wait(&status);
+    int father_read=0;
     while(read(pipe_fd[0], buffer, 5) != 0){
-            //buffer[4]="\0";
-            write(1,buffer,5);
-
+        write(1,buffer,5);
+        father_read++;
     }
+    if((status & 0xFF) == 0){
+        printf("\nIl padre ha letto %d volte\n",father_read);
+    }
+    exit(0);
 }
