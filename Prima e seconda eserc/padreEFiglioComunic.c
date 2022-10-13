@@ -52,8 +52,6 @@ int main(int argc, char **argv){
             exit(1);
         }
         while(read(fd, buffer, MSGSIZE) != 0){
-            //printf("Bau");
-            //if(strcmp(buffer[0],"\n")) break;
             if(&buffer[0] == "\n") break;
             strcpy(&buffer[MSGSIZE-1],"\0");
             write(pipe_fd[1],buffer,5);
