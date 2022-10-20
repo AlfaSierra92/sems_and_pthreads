@@ -18,10 +18,11 @@ $ multi_writerBis 100000 log
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/wait.h>
 
 #define PERM 0644
 
-int main(int argc, char **argv){
+int main(int argc, char *argv[]){
     /*int n; //numero di caratteri letti da read()
     char buffer[BUFSIZ];*/ //buffer di input
     int fd = 0;
@@ -39,7 +40,7 @@ int main(int argc, char **argv){
     buffer = malloc(blocksize);
 
     //creazione file da parte del padre
-    fd = creat(fwrite, PERM);
+    fd = creat(argv[2], PERM);
     close(fd);
     for(i=0; i<10; i++){
         if ((pid=fork()) < 0){
@@ -56,7 +57,8 @@ int main(int argc, char **argv){
             lseek(fd, 0L, SEEK_END);
 
             for(j=0;j<blocksize;j++){
-                if(write(fd, i, 1) != 1){
+                char c = i + '0';
+                if(write(fd, &c, 1) != 1){
                     perror("write");
 			        exit(-1);
                 }
