@@ -22,7 +22,7 @@ $ multi_writerBis 100000 log
 
 #define PERM 0644
 
-int main(int argc, char *argv[]){
+int main(int argc, char **argv){
     /*int n; //numero di caratteri letti da read()
     char buffer[BUFSIZ];*/ //buffer di input
     int fd = 0;
@@ -78,9 +78,9 @@ int main(int argc, char *argv[]){
             sprintf(error, "Figlio con pid %d terminato in modo anomalo\n", pid);
 	    	perror(error);
         } else { 
-		ritorno=(int)((status >> 8) & 0xFF);
-                sprintf(error,"Il figlio con pid=%d ha ritornato %d (se 255 problemi nel figlio)\n", pid, ritorno);
-                perror(error);
+		    ritorno=(int)((status >> 8) & 0xFF);
+            sprintf(error,"Il figlio con pid=%d ha ritornato %d (se 255 problemi nel figlio)\n", pid, ritorno);
+            perror(error);
         }
     }
     exit(0);
