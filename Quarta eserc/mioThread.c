@@ -9,14 +9,13 @@ pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER;;
 
 void *thread_function(void *id){
     int *pi = (int *)id;
-    //printf("Thread%d partito: Hello World!\n", *pi);
+
     switch (*pi){
     case 0:
-        //mutex--;
         pthread_mutex_lock(&count_mutex);
-        scanf("Insert a number: %d", &read);
+        printf("Insert a number: ");
+        scanf("%d", &read);
         pthread_mutex_unlock(&count_mutex);
-        //mutex++;
         break;
     
     case 1:
@@ -58,9 +57,6 @@ int main(){
     }
 
     //pthread_join(thread[0], NULL);
-    int tmp1=read;
-    //read++;
-    int tmp=read;
 
     taskids[1]=1;
     if (pthread_create(&thread[1], NULL, thread_function, (void *) (&taskids[1])) != 0) {
