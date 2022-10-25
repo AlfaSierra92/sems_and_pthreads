@@ -4,7 +4,7 @@
 #define NUM_THREADS 2
 
 //int mutex=1;
-//int read=0;
+int read=0;
 pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER;;
 
 void *thread_function(void *id){
@@ -21,6 +21,7 @@ void *thread_function(void *id){
     
     case 1:
         pthread_mutex_lock(&count_mutex);
+        read++;
         printf("%d\n", read);
         pthread_mutex_unlock(&count_mutex);
         break;
@@ -36,7 +37,6 @@ int main(){
     int *taskids;
     int i;
     char error[250];
-    int *read;
 
     thread=(pthread_t *) malloc(NUM_THREADS * sizeof(pthread_t));
     if (thread == NULL){
@@ -50,14 +50,6 @@ int main(){
         exit(2);
     }
 
-    /*for (i=0; i < NUM_THREADS; i++){
-        taskids[i] = i;
-        if (pthread_create(&thread[i], NULL, PrintHello, (void *) (&taskids[i])) != 0) {
-		    sprintf(error,"SONO IL MAIN E CI SONO STATI PROBLEMI NELLA CREAZIONE DEL thread %d-esimo\n", taskids[i]);
-		    perror(error);
-        	exit(3);
-    	}
-    }*/
     taskids[0]=0;
     if (pthread_create(&thread[0], NULL, thread_function, (void *) (&taskids[0])) != 0) {
 		sprintf(error,"SONO IL MAIN E CI SONO STATI PROBLEMI NELLA CREAZIONE DEL thread %d-esimo\n", taskids[i]);
@@ -65,9 +57,9 @@ int main(){
         exit(3);
     }
 
-    pthread_join(thread[0], NULL);
+    //pthread_join(thread[0], NULL);
     int tmp1=read;
-    read++;
+    //read++;
     int tmp=read;
 
     taskids[1]=1;
@@ -77,7 +69,7 @@ int main(){
         exit(3);
     }
 
-    //pthread_join(thread[0], NULL);
+    pthread_join(thread[0], NULL);
     pthread_join(thread[1], NULL);
 
     return 0;
