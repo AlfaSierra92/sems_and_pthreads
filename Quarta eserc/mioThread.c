@@ -1,28 +1,33 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <semaphore.h>
 #define NUM_THREADS 2
 
 //int mutex=1;
 int read=0;
-pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER;;
+//pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER;
+sem_t semaphore;
 
 void *thread_function(void *id){
     int *pi = (int *)id;
 
     switch (*pi){
     case 0:
-        pthread_mutex_lock(&count_mutex);
+        //pthread_mutex_lock(&count_mutex);
         printf("Insert a number: ");
         scanf("%d", &read);
-        pthread_mutex_unlock(&count_mutex);
+        //pthread_mutex_unlock(&count_mutex);
+        sem_post(&semaphore);
         break;
     
     case 1:
-        pthread_mutex_lock(&count_mutex);
+        //pthread_mutex_lock(&count_mutex);
+        sem_wait(&semaphore);
         read++;
         printf("%d\n", read);
-        pthread_mutex_unlock(&count_mutex);
+        //pthread_mutex_unlock(&count_mutex);
+        sem_post(&semaphore);
         break;
         
     default:
@@ -36,6 +41,9 @@ int main(){
     int *taskids;
     int i;
     char error[250];
+
+    // initialize semaphore, only to be used with threads in this process, set value to 0
+    sem_init(&semaphore, 0, 0);
 
     thread=(pthread_t *) malloc(NUM_THREADS * sizeof(pthread_t));
     if (thread == NULL){
