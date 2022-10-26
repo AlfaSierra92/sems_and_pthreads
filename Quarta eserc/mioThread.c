@@ -76,5 +76,6 @@ int main(){
     pthread_join(thread[0], NULL);
     pthread_join(thread[1], NULL);
 
+    sem_destroy(&semaphore);
     return 0;
 }
