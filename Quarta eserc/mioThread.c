@@ -4,9 +4,7 @@
 #include <semaphore.h>
 #define NUM_THREADS 2
 
-//int mutex=1;
 int read=0;
-//pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER;
 sem_t semaphore;
 
 void *thread_function(void *id){
@@ -14,19 +12,15 @@ void *thread_function(void *id){
 
     switch (*pi){
     case 0:
-        //pthread_mutex_lock(&count_mutex);
         printf("Insert a number: ");
         scanf("%d", &read);
-        //pthread_mutex_unlock(&count_mutex);
         sem_post(&semaphore);
         break;
     
     case 1:
-        //pthread_mutex_lock(&count_mutex);
         sem_wait(&semaphore);
         read++;
         printf("%d\n", read);
-        //pthread_mutex_unlock(&count_mutex);
         sem_post(&semaphore);
         break;
         
