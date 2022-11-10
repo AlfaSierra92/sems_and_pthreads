@@ -16,7 +16,7 @@ utilizzata. */
 #include <unistd.h>
 #include <pthread.h>
 #include <semaphore.h>
-#define NUM_RESOURCE 5
+#define NUM_RESOURCE 1
 typedef enum {false, true} Boolean;
 pthread_mutex_t MUTEX = PTHREAD_MUTEX_INITIALIZER;
 sem_t risorse;
@@ -56,6 +56,7 @@ void *thread_function(void *id){
     printf("Risorsa %d bloccata\n", x);
     sleep(5);
     RILASCIO(x);
+    printf("Risorsa %d rilasciata\n", x);
 
 }
 
