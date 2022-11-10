@@ -16,16 +16,23 @@ utilizzata. */
 #include <unistd.h>
 #include <pthread.h>
 #include <semaphore.h>
-#define NUM_RESOURCE 1
+
+#define NUM_RESOURCE 5
+
 typedef enum {false, true} Boolean;
+
 pthread_mutex_t MUTEX = PTHREAD_MUTEX_INITIALIZER;
 sem_t risorse;
 Boolean LIBERO[NUM_RESOURCE];
+char error[250];
 
 int RICHIESTA(){
     int i;
 
-    sem_wait(&risorse);
+    if (sem_wait(&risorse) != 0){
+		perror(error);
+        exit(3);
+    }
     pthread_mutex_lock(&MUTEX);
     // sezione critica qui
     for (i=0; !LIBERO[i]; i++);
@@ -51,6 +58,7 @@ void RILASCIO(int i){
 
 void *thread_function(void *id){
     int x;
+    int *ptr;
 
     x = RICHIESTA();
     printf("Risorsa %d bloccata\n", x);
@@ -58,6 +66,8 @@ void *thread_function(void *id){
     RILASCIO(x);
     printf("Risorsa %d rilasciata\n", x);
 
+    *ptr=x;
+    pthread_exit((void *) ptr);
 }
 
 int main(int argc, char **argv){
@@ -65,7 +75,7 @@ int main(int argc, char **argv){
     int *taskids;
     int n_thread;
     int i;
-    char error[250];
+    int *p;
 
     // initialize semaphore, only to be used with threads in this process, set value to 1
     //sem_init(&mutex, 0, 1);
@@ -78,8 +88,6 @@ int main(int argc, char **argv){
     }
 
     if (argc == 2){
-        //fd = open(argv[1], O_RDONLY);
-        //printf("%d",fd);
         n_thread=atoi(argv[1]);
     }
     if (sem_init(&risorse, 0, n_thread) != 0 ){
@@ -105,7 +113,9 @@ int main(int argc, char **argv){
     }
 
     for(i=0; i<n_thread; i++){
-        pthread_join(thread[i], NULL);
+        int ris;
+        pthread_join(thread[i], (void**) & p);
+        printf("Pthread %d-esimo restituisce %d\n", i, ris);
     }
 
     return 0;
