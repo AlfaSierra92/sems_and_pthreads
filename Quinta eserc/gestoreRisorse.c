@@ -53,7 +53,7 @@ void *thread_function(void *id){
     int x;
 
     x = RICHIESTA();
-    printf("Risorsa %d bloccata", x);
+    printf("Risorsa %d bloccata\n", x);
     sleep(5);
     RILASCIO(x);
 
@@ -93,7 +93,7 @@ int main(int argc, char **argv){
     }
     taskids = (int *) malloc(n_thread * sizeof(int));
 
-    for(i=0; i++; i<n_thread){
+    for(i=0; i<n_thread; i++){
         taskids[i]=i;
         printf("Sto per creare il thread %d-esimo\n", taskids[i]);
         if (pthread_create(&thread[i], NULL, thread_function, (void *) (&taskids[i])) != 0) {
@@ -103,7 +103,7 @@ int main(int argc, char **argv){
         }
     }
 
-    for(i=0; i++; i<n_thread){
+    for(i=0; i<n_thread; i++){
         pthread_join(thread[i], NULL);
     }
 
