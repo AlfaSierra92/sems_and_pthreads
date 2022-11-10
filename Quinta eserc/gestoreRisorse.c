@@ -81,7 +81,10 @@ int main(int argc, char **argv){
         //printf("%d",fd);
         n_thread=atoi(argv[1]);
     }
-    sem_init(&risorse, 0, n_thread);
+    if (sem_init(&risorse, 0, n_thread) != 0 ){
+        perror("Problemi con l'inizializzazione del semaforo RISORSE\n");
+        exit(5);
+    }
 
     thread=(pthread_t *) malloc(n_thread * sizeof(pthread_t));
     if (thread == NULL){
@@ -92,6 +95,7 @@ int main(int argc, char **argv){
 
     for(i=0; i++; i<n_thread){
         taskids[i]=i;
+        printf("Sto per creare il thread %d-esimo\n", taskids[i]);
         if (pthread_create(&thread[i], NULL, thread_function, (void *) (&taskids[i])) != 0) {
 		sprintf(error,"SONO IL MAIN E CI SONO STATI PROBLEMI NELLA CREAZIONE DEL thread %d-esimo\n", taskids[i]);
 		perror(error);
@@ -99,4 +103,9 @@ int main(int argc, char **argv){
         }
     }
 
+    for(i=0; i++; i<n_thread){
+        pthread_join(thread[i], NULL);
+    }
+
+    return 0;
 }
