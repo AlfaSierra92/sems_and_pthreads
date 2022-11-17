@@ -60,6 +60,11 @@ void *thread_function(void *id){
     int x;
     int *ptr;
 
+    ptr = (int *) malloc(sizeof(int));
+    if (ptr == NULL){
+        perror("Problemi con l'allocazione di ptr\n");
+        exit(-1);
+    }
     x = RICHIESTA();
     printf("Risorsa %d bloccata\n", x);
     sleep(5);
@@ -90,8 +95,8 @@ int main(int argc, char **argv){
     if (argc == 2){
         n_thread=atoi(argv[1]);
     }
-    if (sem_init(&risorse, 0, n_thread) != 0 ){
-        perror("Problemi con l'inizializzazione del semaforo RISORSE\n");
+    if (sem_init(&risorse, 0, NUM_RESOURCE) != 0 ){ //ERRORE DEL CAPPEROOOOOOO; inizializzavo il semaforo col numero di thread 
+        perror("Problemi con l'inizializzazione del semaforo RISORSE\n"); //anzichè il numero di risorse.....
         exit(5);
     }
 
@@ -106,15 +111,16 @@ int main(int argc, char **argv){
         taskids[i]=i;
         printf("Sto per creare il thread %d-esimo\n", taskids[i]);
         if (pthread_create(&thread[i], NULL, thread_function, (void *) (&taskids[i])) != 0) {
-		sprintf(error,"SONO IL MAIN E CI SONO STATI PROBLEMI NELLA CREAZIONE DEL thread %d-esimo\n", taskids[i]);
-		perror(error);
-        exit(3);
+		    sprintf(error,"SONO IL MAIN E CI SONO STATI PROBLEMI NELLA CREAZIONE DEL thread %d-esimo\n", taskids[i]);
+		    perror(error);
+            exit(3);
         }
     }
 
     for(i=0; i<n_thread; i++){
         int ris;
         pthread_join(thread[i], (void**) & p);
+        ris = *p;
         printf("Pthread %d-esimo restituisce %d\n", i, ris);
     }
 
