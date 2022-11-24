@@ -137,7 +137,40 @@ MPI jobs can be run across multiple nodes and the  `--ntasks`  option is used to
     # Your script goes here
     mpirun myscript
 If instead you want your 16 vCPU job to run across 2 nodes, using 8 vCPUs per node you can add the `--ntasks-per-node` flag:
-If instead you want your 16 vCPU job to run across 2 nodes, using 8 vCPUs per node you can add the `--ntasks-per-node` flag:
+
+    #!/bin/bash
+    
+    #SBATCH --job-name=nodempi
+    #SBATCH --ntasks=16
+    #SBATCH --ntasks-per-node=8
+    
+    # Your script goes here
+    mpirun myscript
+### SLURM COMMANDS
+
+So once you've got your head around all the SLURM directives and you have your SLURM script ready to go, you may be wondering "What do I do with it now?". Fortunately the process of submitting your job and monitoring its progress is pretty simple. You just need to remember a few different SLURM commands.
+
+To submit your SLURM job to the queue, use the  `sbatch`  command:
+
+ `sbatch myslurmscript.sh`
+
+You will then be given a message with the ID for that job:
+
+ Submitted batch job 208`
+
+In this example, the job ID is 208.
+
+To check the status of this job in the queue, use the  `squeue`  command:
+
+`squeue --job 208`
+
+**Note**: You can run  `squeue`  without the  `--job`  flag to check the status for all jobs in the queue.
+
+To cancel this job, use  `scancel`:
+
+ `scancel 208`
+
+To check the status of your entire cluster, use  `sinfo`. This can sometimes be helpful for troubleshooting if your jobs aren't running as expected. For more information on  `sinfo`  see  [here](https://slurm.schedmd.com/sinfo.html).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbOTMyNDk4NjAxLC0xNzI0MjY1OTUwXX0=
+eyJoaXN0b3J5IjpbNTUxMjQzOTM1LC0xNzI0MjY1OTUwXX0=
 -->
