@@ -1,3 +1,4 @@
+## Slurm notes
 Install slurm with command
 
     sudo apt install slurmd slurmctld
