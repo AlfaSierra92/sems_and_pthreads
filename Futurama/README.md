@@ -171,7 +171,43 @@ To cancel this job, use  `scancel`:
  `scancel 208`
 
 To check the status of your entire cluster, use  `sinfo`. This can sometimes be helpful for troubleshooting if your jobs aren't running as expected. For more information on  `sinfo`  see  [here](https://slurm.schedmd.com/sinfo.html).
+## sbatch vs srun
+The documentation says
+
+```
+srun is used to submit a job for execution in real time
+```
+
+while
+```
+sbatch is used to submit a job script for later execution.
+```
+They both accept practically the same set of parameters. The main difference is that  `srun`  is interactive and blocking (you get the result in your terminal and you cannot write other commands until it is finished), while  `sbatch`  is batch processing and non-blocking (results are written to a file and you can submit other commands right away).
+
+If you use  `srun`  in the background with the  `&`  sign, then you remove the 'blocking' feature of  `srun`, which becomes interactive but non-blocking. It is still interactive though, meaning that the output will clutter your terminal, and the  `srun`  processes are linked to your terminal. If you disconnect, you will loose control over them, or they might be killed (depending on whether they use  `stdout`  or not basically). And they will be killed if the machine to which you connect to submit jobs is rebooted.
+
+If you use  `sbatch`, you submit your job and it is handled by Slurm ; you can disconnect, kill your terminal, etc. with no consequence. Your job is no longer linked to a running process.
+
+> What are some things that I can do with one that I cannot do with the other, and why?
+
+A feature that is available to  `sbatch`  and not to  `srun`  is  [job arrays](https://slurm.schedmd.com/job_array.html). As  `srun`  can be used within an  `sbatch`  script, there is nothing that you cannot do with  `sbatch`.
+
+> How are these related to each other, and how do they differ for srun vs sbatch?
+
+All the parameters  `--ntasks`,  `--nodes`,  `--cpus-per-task`,  `--ntasks-per-node`  have the same meaning in both commands. That is true for nearly all parameters, with the notable exception of  `--exclusive`.
+
+> What is happening "under the hood" that causes this to be the case?
+
+`srun`  immediately executes the script on the remote host, while  `sbatch`  copies the script in an internal storage and then uploads it on the compute node when the job starts. You can check this by modifying your submission script after it has been submitted; changes will not be taken into account (see  [this](https://stackoverflow.com/questions/32216228/after-submitting-a-m-batch-job-with-slurm-can-i-edit-my-m-file-without-changi)).
+
+> How do they interact with each other, and what is the "canonical" use-case for each of them?
+
+You typically use  `sbatch`  to submit a job and  `srun`  in the submission script to create job steps as Slurm calls them.  `srun`  is used to launch the processes. If your program is a parallel MPI program,  `srun`  takes care of creating all the MPI processes. If not,  `srun`  will run your program as many times as specified by the  `--ntasks`  option. There are many use cases depending on whether your program is paralleled or not, has a long-running time or not, is composed of a single executable or not, etc. Unless otherwise specified,  `srun`  inherits by default the pertinent options of the  `sbatch`  or  `salloc`  which it runs under (from  [here](https://groups.google.com/forum/#!topic/slurm-devel/wKaUEOzuQq4)).
+
+> Specifically, would I ever use srun by itself?
+
+Other than for small tests, no. A common use is  `srun --pty bash`  to get a shell on a compute job.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTk5OTQ4MTUyNiwxOTkyODIyMjQ5LC0xNz
-I0MjY1OTUwXX0=
+eyJoaXN0b3J5IjpbLTE3MjI5NzM5MzIsLTk5OTQ4MTUyNiwxOT
+kyODIyMjQ5LC0xNzI0MjY1OTUwXX0=
 -->
