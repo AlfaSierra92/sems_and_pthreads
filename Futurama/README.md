@@ -67,3 +67,6 @@ and now we can start queuing up jobs:
     PARTITION AVAIL TIMELIMIT NODES STATE NODELIST  
     LocalQ* up infinite 1 idle localhost
 Now you have a working slurm queue, if you need to make changes to your config edit the `slurm.conf` and simply restart `slurmctld` and `slurmd` via systemd.
+<!--stackedit_data:
+eyJoaXN0b3J5IjpbLTE3MjQyNjU5NTBdfQ==
+-->
