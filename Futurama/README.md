@@ -50,7 +50,7 @@ Next, we need to create the `slurm.conf` file which configures how your slurm qu
     SlurmdLogFile=/var/log/slurm-llnl/slurmd.log  
     #  
     # COMPUTE NODES  
-    NodeName=localhost CPUs=1 RealMemory=500 State=UNKNOWN  
+    NodeName=localhost CPUs=1 RealMemory=512 State=UNKNOWN  
     PartitionName=LocalQ Nodes=ALL Default=YES MaxTime=INFINITE State=UP  
     EOF
     
@@ -172,5 +172,6 @@ To cancel this job, use  `scancel`:
 
 To check the status of your entire cluster, use  `sinfo`. This can sometimes be helpful for troubleshooting if your jobs aren't running as expected. For more information on  `sinfo`  see  [here](https://slurm.schedmd.com/sinfo.html).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTk5MjgyMjI0OSwtMTcyNDI2NTk1MF19
+eyJoaXN0b3J5IjpbLTk5OTQ4MTUyNiwxOTkyODIyMjQ5LC0xNz
+I0MjY1OTUwXX0=
 -->
