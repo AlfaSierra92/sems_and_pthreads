@@ -182,7 +182,7 @@ while
 ```
 sbatch is used to submit a job script for later execution.
 ```
-They both accept practically the same set of parameters. The main difference is that  `srun`  is interactive and blocking (you get the result in your terminal and you cannot write other commands until it is finished), while  `sbatch`  is batch processing and non-blocking (results are written to a file and you can submit other commands right away).
+They both accept practically the same set of parameters. The main difference is that  `srun`  is *interactive and blocking* (you get the result in your terminal and you cannot write other commands until it is finished), while  `sbatch`  is *batch processing and non-blocking* (results are written to a file and you can submit other commands right away).
 
 If you use  `srun`  in the background with the  `&`  sign, then you remove the 'blocking' feature of  `srun`, which becomes interactive but non-blocking. It is still interactive though, meaning that the output will clutter your terminal, and the  `srun`  processes are linked to your terminal. If you disconnect, you will loose control over them, or they might be killed (depending on whether they use  `stdout`  or not basically). And they will be killed if the machine to which you connect to submit jobs is rebooted.
 
@@ -208,6 +208,6 @@ You typically use  `sbatch`  to submit a job and  `srun`  in the submission scri
 
 Other than for small tests, no. A common use is  `srun --pty bash`  to get a shell on a compute job.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE3MjI5NzM5MzIsLTk5OTQ4MTUyNiwxOT
+eyJoaXN0b3J5IjpbLTIwNzQ5MTEyNjIsLTk5OTQ4MTUyNiwxOT
 kyODIyMjQ5LC0xNzI0MjY1OTUwXX0=
 -->
