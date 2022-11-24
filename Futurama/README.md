@@ -1,5 +1,5 @@
 # Slurm notes
-##
+## Installation
 Install slurm with command
 
     sudo apt install slurmd slurmctld
@@ -69,7 +69,24 @@ and now we can start queuing up jobs:
     LocalQ* up infinite 1 idle localhost
 Now you have a working slurm queue, if you need to make changes to your config edit the `slurm.conf` and simply restart `slurmctld` and `slurmd` via systemd.
 
-## Install
+## Usage examples
+The best way to understand how to use the Slurm directives to allocate the required resources for your job is to provide some examples based on the type of workload you plan to run:
+
+### SINGLE CPU (NON-PARALLEL) JOBS
+
+Single CPU, or non-parallel, jobs are often simple commands that can be run on a single vCPU. You can request a single CPU job as follows:
+
+     #!/bin/bash
+    
+    #SBATCH --job-name=singlecpu
+    #SBATCH --ntasks=1
+    #SBATCH --cpus-per-task=1
+    
+    # Your script goes here
+    sleep 30
+    echo "hello"
+  If you have many single CPU commands that you want to run at the same time, rather than consecutively on the same vCPU, you can specify a greater number of tasks and then use `srun` to allocate each command to a task. In the below example, one task will echo "I'm task 1" and the other task will echo "I'm task 2" but both of these will be executed simultaneously on two different vCPUs.
+
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTEwNTQyNDAyOCwtMTcyNDI2NTk1MF19
+eyJoaXN0b3J5IjpbMzg0NjYyMjA0LC0xNzI0MjY1OTUwXX0=
 -->
