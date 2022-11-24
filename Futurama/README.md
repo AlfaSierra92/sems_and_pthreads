@@ -156,7 +156,7 @@ To submit your SLURM job to the queue, use the  `sbatch`  command:
 
 You will then be given a message with the ID for that job:
 
- Submitted batch job 208`
+ `Submitted batch job 208`
 
 In this example, the job ID is 208.
 
@@ -172,5 +172,5 @@ To cancel this job, use  `scancel`:
 
 To check the status of your entire cluster, use  `sinfo`. This can sometimes be helpful for troubleshooting if your jobs aren't running as expected. For more information on  `sinfo`  see  [here](https://slurm.schedmd.com/sinfo.html).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNTUxMjQzOTM1LC0xNzI0MjY1OTUwXX0=
+eyJoaXN0b3J5IjpbMTk5MjgyMjI0OSwtMTcyNDI2NTk1MF19
 -->
