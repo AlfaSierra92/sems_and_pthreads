@@ -198,7 +198,7 @@ All the parameters  `--ntasks`,  `--nodes`,  `--cpus-per-task`,  `--ntasks-per-n
 
 > What is happening "under the hood" that causes this to be the case?
 
-`srun`  immediately executes the script on the remote host, while  `sbatch`  copies the script in an internal storage and then uploads it on the compute node when the job starts. You can check this by modifying your submission script after it has been submitted; changes will not be taken into account (see  [this](https://stackoverflow.com/questions/32216228/after-submitting-a-m-batch-job-with-slurm-can-i-edit-my-m-file-without-changi)).
+`srun`  **immediately executes** the script on the remote host, while  `sbatch`  **copies the script in an internal storage and then uploads it** on the compute node when the job starts. You can check this by modifying your submission script after it has been submitted; changes will not be taken into account (see  [this](https://stackoverflow.com/questions/32216228/after-submitting-a-m-batch-job-with-slurm-can-i-edit-my-m-file-without-changi)).
 
 > How do they interact with each other, and what is the "canonical" use-case for each of them?
 
@@ -208,6 +208,6 @@ You typically use  `sbatch`  to submit a job and  `srun`  in the submission scri
 
 Other than for small tests, no. A common use is  `srun --pty bash`  to get a shell on a compute job.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTIwNzQ5MTEyNjIsLTk5OTQ4MTUyNiwxOT
-kyODIyMjQ5LC0xNzI0MjY1OTUwXX0=
+eyJoaXN0b3J5IjpbMTY5MDQ1Mzk4NiwtOTk5NDgxNTI2LDE5OT
+I4MjIyNDksLTE3MjQyNjU5NTBdfQ==
 -->
