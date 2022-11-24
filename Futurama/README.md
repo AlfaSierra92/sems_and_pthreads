@@ -97,8 +97,47 @@ Single CPU, or non-parallel, jobs are often simple commands that can be run on a
     srun --ntasks=1 echo "I'm task 1"
     srun --ntasks=1 echo "I'm task 2"
   **Note**: In the example above, because we did not specify anything about nodes, Slurm may allocate the tasks to two different nodes depending on where there is a free vCPU available. See the MPI Jobs section below if you would like to see how to specify how tasks are allocated to nodes.
-  
+  ### MULTITHREADED (SYMMETRIC MULTIPROCESSING - SMP) JOBS
 
+If your workload can be multithreaded, i.e. run across multiple vCPUs on the same node (symmetric multiprocessing), you should request a single node and increase the  `--cpus-per-task`  directive to be equal to the required number of threads:
+
+    #!/bin/bash
+    
+    #SBATCH --job-name=multithreaded
+    #SBATCH --nodes=1
+    #SBATCH --ntasks=1
+    #SBATCH --cpus-per-task=8
+    
+    # Your script goes here
+    mycommand --threads 8
+**Note**: The specified `--cpus-per-task` must be equal to or less than the number of vCPUs available on a single compute nodes, otherwise the allocation will fail. You can see how many vCPUs each of your compute nodes have in the information tab of your cluster in RONIN:
+You can also specify multiple tasks if you have a number of multithreaded commands you wish to run in parallel. Just ensure you also specify enough nodes for the tasks to run across, or omit the nodes directive and let Slurm determine how many nodes are necessary. For example, the below script will launch 4 tasks in total, each on a separate node, with 4 vCPUs allocated to each task:
+
+    #!/bin/bash
+    
+    #SBATCH --job-name=multithreadedtasks
+    #SBATCH --nodes=4
+    #SBATCH --ntasks=4
+    #SBATCH --cpus-per-task=4
+    
+    # Your script goes here
+    srun --ntasks=1 mycommand1 --threads 4
+    srun --ntasks=1 mycommand2 --threads 4
+    srun --ntasks=1 mycommand3 --threads 4
+    srun --ntasks=1 mycommand4 --threads 4
+### MESSAGE PASSING INTERFACE (MPI) JOBS
+
+MPI jobs can be run across multiple nodes and the  `--ntasks`  option is used to specify the number of vCPUs (since 1 vCPU per task is the default). For example, if you want your MPI job to run across 16 vCPUs and do not care how many nodes these CPUs are split across:
+
+    #!/bin/bash
+    
+    #SBATCH --job-name=simplempi
+    #SBATCH --ntasks=16
+    
+    # Your script goes here
+    mpirun myscript
+If instead you want your 16 vCPU job to run across 2 nodes, using 8 vCPUs per node you can add the `--ntasks-per-node` flag:
+If instead you want your 16 vCPU job to run across 2 nodes, using 8 vCPUs per node you can add the `--ntasks-per-node` flag:
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMzE2NjY1NjUsLTE3MjQyNjU5NTBdfQ==
+eyJoaXN0b3J5IjpbOTMyNDk4NjAxLC0xNzI0MjY1OTUwXX0=
 -->
