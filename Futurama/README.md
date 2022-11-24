@@ -87,6 +87,18 @@ Single CPU, or non-parallel, jobs are often simple commands that can be run on a
     echo "hello"
   If you have many single CPU commands that you want to run at the same time, rather than consecutively on the same vCPU, you can specify a greater number of tasks and then use `srun` to allocate each command to a task. In the below example, one task will echo "I'm task 1" and the other task will echo "I'm task 2" but both of these will be executed simultaneously on two different vCPUs.
 
+    #!/bin/bash
+    
+    #SBATCH --job-name=singlecputasks
+    #SBATCH --ntasks=2
+    #SBATCH --cpus-per-task=1
+    
+    # Your script goes here
+    srun --ntasks=1 echo "I'm task 1"
+    srun --ntasks=1 echo "I'm task 2"
+  **Note**: In the example above, because we did not specify anything about nodes, Slurm may allocate the tasks to two different nodes depending on where there is a free vCPU available. See the MPI Jobs section below if you would like to see how to specify how tasks are allocated to nodes.
+  
+
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMzg0NjYyMjA0LC0xNzI0MjY1OTUwXX0=
+eyJoaXN0b3J5IjpbMzE2NjY1NjUsLTE3MjQyNjU5NTBdfQ==
 -->
