@@ -99,7 +99,7 @@ Single CPU, or non-parallel, jobs are often simple commands that can be run on a
   **Note**: In the example above, because we did not specify anything about nodes, Slurm may allocate the tasks to two different nodes depending on where there is a free vCPU available. See the MPI Jobs section below if you would like to see how to specify how tasks are allocated to nodes.
   ### MULTITHREADED (SYMMETRIC MULTIPROCESSING - SMP) JOBS
 
-If your workload can be multithreaded, i.e. run across multiple vCPUs on the same node (symmetric multiprocessing), you should request a single node and increase the  `--cpus-per-task`  directive to be equal to the required number of threads:
+**If your workload can be multithreaded**, i.e. run across multiple vCPUs on the same node (symmetric multiprocessing), you should request a single node and increase the  `--cpus-per-task`  directive to be equal to the required number of threads:
 
     #!/bin/bash
     
@@ -208,6 +208,7 @@ You typically use  `sbatch`  to submit a job and  `srun`  in the submission scri
 
 Other than for small tests, no. A common use is  `srun --pty bash`  to get a shell on a compute job.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTk0MzY4MTI0NCwxNjkwNDUzOTg2LC05OT
-k0ODE1MjYsMTk5MjgyMjI0OSwtMTcyNDI2NTk1MF19
+eyJoaXN0b3J5IjpbODIzNzA2MzMyLDE5NDM2ODEyNDQsMTY5MD
+Q1Mzk4NiwtOTk5NDgxNTI2LDE5OTI4MjIyNDksLTE3MjQyNjU5
+NTBdfQ==
 -->
