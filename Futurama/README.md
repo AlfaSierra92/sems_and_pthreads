@@ -104,8 +104,8 @@ If your workload can be multithreaded, i.e. run across multiple vCPUs on the sam
     #!/bin/bash
     
     #SBATCH --job-name=multithreaded
-    #SBATCH --nodes=1
-    #SBATCH --ntasks=1
+    #SBATCH --nodes=1 ##number of server used
+    #SBATCH --ntasks=1 ##
     #SBATCH --cpus-per-task=8
     
     # Your script goes here
@@ -208,6 +208,6 @@ You typically use  `sbatch`  to submit a job and  `srun`  in the submission scri
 
 Other than for small tests, no. A common use is  `srun --pty bash`  to get a shell on a compute job.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTY5MDQ1Mzk4NiwtOTk5NDgxNTI2LDE5OT
-I4MjIyNDksLTE3MjQyNjU5NTBdfQ==
+eyJoaXN0b3J5IjpbMTk0MzY4MTI0NCwxNjkwNDUzOTg2LC05OT
+k0ODE1MjYsMTk5MjgyMjI0OSwtMTcyNDI2NTk1MF19
 -->
