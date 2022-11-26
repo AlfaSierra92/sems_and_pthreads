@@ -105,12 +105,12 @@ Single CPU, or non-parallel, jobs are often simple commands that can be run on a
     
     #SBATCH --job-name=multithreaded
     #SBATCH --nodes=1 ##number of server used
-    #SBATCH --ntasks=1 ##
-    #SBATCH --cpus-per-task=8
+    #SBATCH --ntasks=1 ##number of processes
+    #SBATCH --cpus-per-task=8 ##see notes after
     
     # Your script goes here
     mycommand --threads 8
-**Note**: The specified `--cpus-per-task` must be equal to or less than the number of vCPUs available on a single compute nodes, otherwise the allocation will fail. You can see how many vCPUs each of your compute nodes have in the information tab of your cluster in RONIN:
+**Note**: The specified `--cpus-per-task` **must be equal to or less than the number of vCPUs available** on a single compute nodes, otherwise the allocation will fail. 
 You can also specify multiple tasks if you have a number of multithreaded commands you wish to run in parallel. Just ensure you also specify enough nodes for the tasks to run across, or omit the nodes directive and let Slurm determine how many nodes are necessary. For example, the below script will launch 4 tasks in total, each on a separate node, with 4 vCPUs allocated to each task:
 
     #!/bin/bash
@@ -208,7 +208,7 @@ You typically use  `sbatch`  to submit a job and  `srun`  in the submission scri
 
 Other than for small tests, no. A common use is  `srun --pty bash`  to get a shell on a compute job.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbODIzNzA2MzMyLDE5NDM2ODEyNDQsMTY5MD
-Q1Mzk4NiwtOTk5NDgxNTI2LDE5OTI4MjIyNDksLTE3MjQyNjU5
-NTBdfQ==
+eyJoaXN0b3J5IjpbMTkzNjY4ODgzNCwxOTQzNjgxMjQ0LDE2OT
+A0NTM5ODYsLTk5OTQ4MTUyNiwxOTkyODIyMjQ5LC0xNzI0MjY1
+OTUwXX0=
 -->
