@@ -52,7 +52,7 @@ void epilogo1(struct my_resource *r) {
     if ("<POSSO SVEGLIARE QUALCUNO>") { 
         "<DEREGISTRO BLOCCAGGIO>"; //vedi prologo1
         "<ALLOCO RISORSA>";
-        sem_post(&r->priv);
+        sem_post(&r->priv); //considera che potrebbe essere un altro semaforo privato
     }
 
     sem_post(&r->mutex);
