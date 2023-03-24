@@ -29,11 +29,11 @@ void inizializza(struct my_resource *r) {
 void prologo1(struct my_resource *r) {
     sem_wait(&r->mutex);
 
-    if ("<POSSO ACCEDERE ALLA RISORSA>") {
-        "<ALLOCO RISORSA>";
-        sem_post(&r->priv);
+    if ("<POSSO ACCEDERE ALLA RISORSA>") { //controllo se è possibile accedervi
+        "<ALLOCO RISORSA>"; //la alloco (eventualmente ne tengo conto incrementando un contatore o altro)
+        sem_post(&r->priv); //
     } else {
-        "<REGISTRO BLOCCAGGIO>";
+        "<REGISTRO BLOCCAGGIO>"; //eventualmente incrementando un contatore
     }
 
     sem_post(&r->mutex);
@@ -48,9 +48,9 @@ void prologo1(struct my_resource *r) {
 void epilogo1(struct my_resource *r) {
     sem_wait(&r->mutex);
 
-    "<DEALLOCO RISORSA>";
-    if ("<POSSO SVEGLIARE QUALCUNO>") {
-        "<DEREGISTRO BLOCCAGGIO>";
+    "<DEALLOCO RISORSA>"; //eventualmente decrementando un contatore
+    if ("<POSSO SVEGLIARE QUALCUNO>") { 
+        "<DEREGISTRO BLOCCAGGIO>"; //vedi prologo1
         "<ALLOCO RISORSA>";
         sem_post(&r->priv);
     }
