@@ -30,8 +30,8 @@ struct gestore_t{
     sem_t mutex;
     sem_t semA, semB, semRes;
 
-    int na,nb;
-    int ca,cb;
+    int na,nb,nr;
+    int ca,cb,cr;
     int stato;
 } gestore;
 
@@ -50,7 +50,7 @@ void init_gestore(struct gestore_t *g){
     sem_init(&g->semB, 0, 0);
     sem_init(&g->semRes, 0, 0);
 
-    g->na = g->nb = g->ca = g->cb = 0;
+    g->na = g->nb = g->ca = g->cb = g->nr = g->cr = 0;
     g->stato = NESSUNO;
 }
 
@@ -134,27 +134,29 @@ void *B(void *arg){
 
 void StartReset(struct gestore_t *g){
     sem_wait(&g->mutex);
-    g->stato = STATO_RESET;
-    sem_post(&g->semRes);
+    if (g->stato != STATO_RESET && g->nr == 0){
+        sem_post(&g->semRes);
+        g->stato = STATO_RESET;
+        g->nr++;
+    } else /*if (g->stato == STATO_RESET && g->nr > 0)*/{
+        g->cr++;
+    }
+    //g->stato = STATO_RESET;
+    //sem_post(&g->semRes);
     sem_post(&g->mutex);
     sem_wait(&g->semRes);
-}
-
-void *Reset(void *arg){
-    for (;;) {
-        StartA(&gestore);
-        putchar(*(char *)arg);
-        EndA(&gestore);
-        pausetta();
-    }
-    return 0;
 }
 
 void EndReset(struct gestore_t *g){
     sem_wait(&g->mutex);
     //g->stato = NESSUNO;
     //sem_post(&g->semRes);
-    if (g->ca != 0){
+    g->nr--;
+    if (g->cr > 0){
+        g->cr--;
+        g->nr++;
+        sem_post(&g->semRes);
+    } else if (g->ca != 0){
         g->ca--;
         g->na++;
         g->stato = STATO_A_O_B;
@@ -169,6 +171,16 @@ void EndReset(struct gestore_t *g){
     }
     sem_post(&g->mutex);
     //sem_wait(&g->semRes);
+}
+
+void *Reset(void *arg){
+    for (;;) {
+        StartReset(&gestore);
+        putchar(*(char *)arg);
+        EndReset(&gestore);
+        pausetta();
+    }
+    return 0;
 }
 
 int main(){
