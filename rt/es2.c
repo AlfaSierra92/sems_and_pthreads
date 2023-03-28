@@ -210,7 +210,7 @@ int main(){
     pthread_attr_destroy(&a);
 
     /* aspetto 10 secondi prima di terminare tutti quanti */
-    sleep(5);
+    sleep(10);
 
     return 0;
 }
