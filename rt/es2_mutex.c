@@ -10,7 +10,7 @@
 
 struct gestore_t{
     pthread_mutex_t mutex;
-    pthread_cond_t semA, semB, semRes;
+    pthread_cond_t semA, semRes;
 
     int na,nb,nr;
     int ca,cb,cr;
@@ -26,7 +26,6 @@ void init_gestore(struct gestore_t *g){
 
     pthread_mutex_init(&g->mutex, &m_attr);
     pthread_cond_init(&g->semA, &c_attr); //USO LO STESSO COND PER A SIA PER B
-    pthread_cond_init(&g->semB, &c_attr);
     pthread_cond_init(&g->semRes, &c_attr);
 
     pthread_condattr_destroy(&c_attr);
