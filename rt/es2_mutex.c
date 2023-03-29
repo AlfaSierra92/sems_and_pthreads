@@ -25,7 +25,7 @@ void init_gestore(struct gestore_t *g){
     pthread_condattr_init(&c_attr);
 
     pthread_mutex_init(&g->mutex, &m_attr);
-    pthread_cond_init(&g->semA, &c_attr);
+    pthread_cond_init(&g->semA, &c_attr); //USO LO STESSO COND PER A SIA PER B
     pthread_cond_init(&g->semB, &c_attr);
     pthread_cond_init(&g->semRes, &c_attr);
 
@@ -63,7 +63,7 @@ void StartB(struct gestore_t *g){
     pthread_mutex_lock(&g->mutex);
     while(g->stato == STATO_RESET || g->nb >= 3){
         g->cb++;
-        pthread_cond_wait(&g->semB,&g->mutex);
+        pthread_cond_wait(&g->semA,&g->mutex);
         g->cb--;
     }
     g->stato = STATO_A_O_B;
@@ -77,7 +77,7 @@ void EndB(struct gestore_t *g){
     g->nb--;
     if (g->cb>=0 && g->nb<3){
         g->stato = NESSUNO;
-        pthread_cond_signal(&g->semB);
+        pthread_cond_signal(&g->semA);
     }
     pthread_mutex_unlock(&g->mutex);
 }
@@ -103,20 +103,20 @@ void EndReset(struct gestore_t *g){
         pthread_cond_signal(&g->semRes);
     }*/
     if (g->cr > 0){
-        g->cr--;
+        //g->cr--; //QUI DECREMENTAVO DUE VOLTE!!!!!
         //g->nr++;
         pthread_cond_signal(&g->semRes);
-    } else if (g->ca != 0){
-        g->ca--;
+    } else if (g->ca != 0 || g->cb != 0){
+        //g->ca--; //ANCHE QUI!!!!
         //g->na++;
         g->stato = STATO_A_O_B;
         pthread_cond_signal(&g->semA);
-    } else if (g->cb != 0){
-        g->cb--;
+    } /*else if (g->cb != 0){ //UNIFICANDO sem questa if non serve più
+        g->cb--; //ANCHE QUI!!!!
         //g->nb++;
         g->stato = STATO_A_O_B;
         pthread_cond_signal(&g->semB);
-    } else {
+    }*/ else {
         g->stato = NESSUNO;
     }
 
@@ -133,7 +133,10 @@ void pausetta(void){
 void *A(void *arg){
     for (;;) {
         StartA(&gestore);
+        putchar(*(char *)"A");
         putchar(*(char *)arg);
+        putchar(*(char *)"a");
+        putchar(*(char *)"\n");
         EndA(&gestore);
         pausetta();
     }
@@ -143,7 +146,10 @@ void *A(void *arg){
 void *B(void *arg){
     for (;;) {
         StartB(&gestore);
+        putchar(*(char *)"B");
         putchar(*(char *)arg);
+        putchar(*(char *)"b");
+        putchar(*(char *)"\n");
         EndB(&gestore);
         pausetta();
     }
@@ -153,7 +159,10 @@ void *B(void *arg){
 void *Reset(void *arg){
     for (;;) {
         StartReset(&gestore);
+        putchar(*(char *)"R");
         putchar(*(char *)arg);
+        putchar(*(char *)"r");
+        putchar(*(char *)"\n");
         EndReset(&gestore);
         pausetta();
     }
@@ -175,14 +184,14 @@ int main(){
     /* non ho voglia di scrivere 10000 volte join! */
     pthread_attr_setdetachstate(&a, PTHREAD_CREATE_DETACHED);
 
-    pthread_create(&p, &a, A, (void *)"a");
-    pthread_create(&p, &a, A, (void *)"A");
+    //pthread_create(&p, &a, A, (void *)"a");
+    pthread_create(&p, &a, A, (void *)"1");
 
-    pthread_create(&p, &a, B, (void *)"B");
-    pthread_create(&p, &a, B, (void *)"b");
+    pthread_create(&p, &a, B, (void *)"2");
+    //pthread_create(&p, &a, B, (void *)"b");
 
-    pthread_create(&p, &a, Reset, (void *)"X");
-    pthread_create(&p, &a, Reset, (void *)"x");
+    pthread_create(&p, &a, Reset, (void *)"3");
+    //pthread_create(&p, &a, Reset, (void *)"x");
 
     pthread_attr_destroy(&a);
 
