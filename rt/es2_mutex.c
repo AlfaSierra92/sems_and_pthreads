@@ -42,9 +42,9 @@ void StartA(struct gestore_t *g){
     while(g->stato == STATO_RESET || g->na >= 3){
         g->ca++;
         pthread_cond_wait(&g->semA,&g->mutex);
-        g->stato = STATO_A_O_B;
         g->ca--;
     }
+    g->stato = STATO_A_O_B;
     g->na++;
     pthread_mutex_unlock(&g->mutex);
 }
@@ -64,9 +64,9 @@ void StartB(struct gestore_t *g){
     while(g->stato == STATO_RESET || g->nb >= 3){
         g->cb++;
         pthread_cond_wait(&g->semB,&g->mutex);
-        g->stato = STATO_A_O_B;
         g->cb--;
     }
+    g->stato = STATO_A_O_B;
     g->nb++;
 
     pthread_mutex_unlock(&g->mutex);
@@ -84,7 +84,7 @@ void EndB(struct gestore_t *g){
 
 void StartReset(struct gestore_t *g){
     pthread_mutex_lock(&g->mutex);
-    while (g->stato == STATO_RESET && g->nr > 0){
+    while (/*g->stato == STATO_RESET && */g->nr > 0){
         g->cr++;
         pthread_cond_wait(&g->semRes,&g->mutex);
         g->cr--;
