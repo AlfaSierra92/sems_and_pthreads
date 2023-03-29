@@ -86,7 +86,10 @@ void EndA(struct gestore_t *g){
 void *A(void *arg){
     for (;;) {
         StartA(&gestore);
+        putchar(*(char *)"A");
         putchar(*(char *)arg);
+        putchar(*(char *)"a");
+        putchar(*(char *)"\n");
         EndA(&gestore);
         pausetta();
     }
@@ -125,7 +128,10 @@ void EndB(struct gestore_t *g){
 void *B(void *arg){
     for (;;) {
         StartB(&gestore);
+        putchar(*(char *)"B");
         putchar(*(char *)arg);
+        putchar(*(char *)"b");
+        putchar(*(char *)"\n");
         EndB(&gestore);
         pausetta();
     }
@@ -176,7 +182,10 @@ void EndReset(struct gestore_t *g){
 void *Reset(void *arg){
     for (;;) {
         StartReset(&gestore);
+        putchar(*(char *)"R");
         putchar(*(char *)arg);
+        putchar(*(char *)"r");
+        putchar(*(char *)"\n");
         EndReset(&gestore);
         pausetta();
     }
@@ -198,14 +207,14 @@ int main(){
     /* non ho voglia di scrivere 10000 volte join! */
     pthread_attr_setdetachstate(&a, PTHREAD_CREATE_DETACHED);
 
-    pthread_create(&p, &a, A, (void *)"a");
-    pthread_create(&p, &a, A, (void *)"A");
+    //pthread_create(&p, &a, A, (void *)"a");
+    pthread_create(&p, &a, A, (void *)"1");
 
-    pthread_create(&p, &a, B, (void *)"B");
-    pthread_create(&p, &a, B, (void *)"b");
+    pthread_create(&p, &a, B, (void *)"2");
+    //pthread_create(&p, &a, B, (void *)"b");
 
-    pthread_create(&p, &a, Reset, (void *)"X");
-    pthread_create(&p, &a, Reset, (void *)"x");
+    pthread_create(&p, &a, Reset, (void *)"3");
+    //pthread_create(&p, &a, Reset, (void *)"x");
 
     pthread_attr_destroy(&a);
 
