@@ -21,6 +21,7 @@ Non è importante l'ordine di accodamento dei clienti.
 #include <stdlib.h>
 
 #define CLIENTI_MAX_DENTRO 5
+#define CLIENTI_MAX_SERATA 100
 
 #define CHIUSA 0
 #define APERTA 1
@@ -46,7 +47,7 @@ void init_discoteca(struct discoteca_t *d){
     sem_init(&d->mutex, 0, 1); //mutex
     sem_init(&d->porta, 0, 0); 
     sem_init(&d->cassa, 0, 0); //disponibilità cassa
-    sem_init(&d->cassiera, 0, 0); //disponibilità cassa
+    sem_init(&d->cassiera, 0, 0); //disponibilità cassiera
 
     d->coda_interno = d->coda_esterno = 0;
     d->stato_porta = APERTA;
@@ -73,6 +74,7 @@ void cliente_coda_dentro(struct discoteca_t *d){
     sem_wait(&d->mutex);
     d->coda_interno--;
     sem_post(&d->mutex);
+    sem_post(&d->cassiera);
 }
 
 //NON BLOCCANTE
@@ -93,13 +95,10 @@ void cliente_esco_coda(struct discoteca_t *d){
 //BLOCCANTE
 //la cassiera dice "avanti!"
 void cassiera_attesa_cliente(struct discoteca_t *d){
-    sem_wait(&d->mutex);
-    if(d->coda_interno > 0) {
-        sem_post(&d->cassa);
-        printf("%s", "Cliente servito dalla cassa\n");
-    }
-    
-    sem_post(&d->mutex);
+    sem_post(&d->cassa);
+    //sem_post(&d->mutex);
+    sem_wait(&d->cassiera);
+    //printf("%s", "Cliente servito dalla cassa\n");
 }
 
 //NON BLOCCANTE
@@ -110,26 +109,26 @@ void cassiera_cliente_servito(struct discoteca_t *d){
 void *cliente(void *arg){
     pthread_t tid = pthread_self();
     //printf("Il thread corrente ha l'id: %lu\n", (unsigned long)tid);
-    printf("%lu %s", (unsigned long)tid, "Arrivo in disco\n");
+    printf("%lu %s", (unsigned long)tid, "arriva fuori in disco\n");
     cliente_coda_fuori(&discoteca);
-    printf("%lu %s", (unsigned long)tid, "fa biglietto\n");
+    printf("%lu %s", (unsigned long)tid, "entra dentro\n");
     cliente_coda_dentro(&discoteca);
+
+    //DA QUI PARTE ZONA NON BLOCCANTE
     printf("%lu %s", (unsigned long)tid, "paga e ritira biglietto\n");
     cliente_esco_coda(&discoteca);
     printf("%lu %s", (unsigned long)tid, "balla!\n");
 }
 
 void *cassiera(void *arg){
-    int i=0;
-    while(i<15){
-        if (&discoteca.coda_interno != 0){
-            cassiera_attesa_cliente(&discoteca);
-            printf("%s", "Emetto biglietto\n");
-            cassiera_cliente_servito(&discoteca);
-            printf("%s", "$$$\n");
-            i++;
-        }
-        
+    //int i=0;
+    while(1){
+        cassiera_attesa_cliente(&discoteca);
+
+        //DA QUI PARTE ZONA NON BLOCCANTE
+        printf("%s", "Emetto biglietto\n");
+        cassiera_cliente_servito(&discoteca);
+        printf("%s", "$$$\n");
         pausetta();
     }
 }
@@ -152,7 +151,7 @@ int main(){
     pthread_create(&p, &a, cassiera, (void *)"1");
 
     int i=0;
-    while(i<15){
+    while(i<5){
         pthread_create(&p, &a, cliente, (void *)"1");
         i++;
     }
