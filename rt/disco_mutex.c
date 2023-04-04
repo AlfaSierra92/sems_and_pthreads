@@ -4,8 +4,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#define CLIENTI_MAX_DENTRO 5
-#define CLIENTI_MAX_SERATA 100
+#define CLIENTI_MAX_DENTRO 35
+#define CLIENTI_MAX_SERATA 125
 
 #define CHIUSA 0
 #define APERTA 1
@@ -18,7 +18,9 @@
 
 struct discoteca_t{
     pthread_mutex_t mutex;
-    pthread_cond_t porta, cassa, cassiera;
+    pthread_cond_t porta; //coda esterna
+    pthread_cond_t cassa; //coda interna
+    pthread_cond_t cassiera;
 
     int coda_esterno; //numero clienti in coda all'esterno
     int coda_interno; //numero clienti in coda all'interno
@@ -55,39 +57,44 @@ void init_discoteca(struct discoteca_t *d){
 //BLOCCANTE se la porta è chiusa
 void cliente_coda_fuori(struct discoteca_t *d){
     pthread_mutex_lock(&d->mutex);
-    d->coda_esterno++;
-    while (d->stato_porta == CHIUSA){
-        pthread_cond_wait(&d->porta,&d->mutex);
+    d->stato_porta = CHIUSA;
+    if (d->coda_interno != 0){
+        while(d->stato_porta != APERTA){
+            d->coda_esterno++;
+            pthread_cond_wait(&d->porta,&d->mutex);
+            d->coda_esterno--;
+        }
     }
-    d->coda_esterno--;
+    //if (d->coda_esterno == 0 && d->coda_interno == 0) d->stato_porta = CHIUSA;
     d->coda_interno++;
+    //d->stato_porta = CHIUSA;
+    if (d->coda_interno == CLIENTI_MAX_DENTRO) d->stato_porta = CHIUSA;
     pthread_mutex_unlock(&d->mutex);
 }
 
 //BLOCCANTE se la cassa è occupata
 void cliente_coda_dentro(struct discoteca_t *d){
     pthread_mutex_lock(&d->mutex);
-    while(d->disponibilita_cassa != CASSA_DISPONIBILE){
+    while (d->disponibilita_cassa != CASSA_DISPONIBILE){
         pthread_cond_wait(&d->cassa,&d->mutex);
     }
+    //decremento coda interna alla cassa????
+    //d->coda_interno--;
     d->presenza_cliente = CLIENTE_PRESENTE;
-    d->disponibilita_cassa = CASSA_INDISPONIBILE;
     pthread_cond_signal(&d->cassiera);
-    d->coda_interno--;
     pthread_mutex_unlock(&d->mutex);
-    pausetta();
 }
 
 //NON BLOCCANTE
 void cliente_esco_coda(struct discoteca_t *d){
-    pthread_mutex_lock(&d->mutex);//SI BLOCCA QUI!!!
-    d->presenza_cliente = CLIENTE_NON_PRESENTE;
-    if (d->coda_interno == 0){
+    pthread_mutex_lock(&d->mutex);
+    /*while(d->coda_interno == 0 && d->coda_interno <= CLIENTI_MAX_DENTRO){
+        pthread_cond_signal(&d->porta);
+    }*/
+    if (d->coda_interno == 0) {
         d->stato_porta = APERTA;
-        while (d->coda_interno < CLIENTI_MAX_DENTRO && d->coda_esterno > 0){
-            pthread_cond_signal(&d->porta);
-        }
-        d->stato_porta = CHIUSA;
+        pthread_cond_signal(&d->porta);
+        //d->stato_porta = CHIUSA;
     }
     pthread_mutex_unlock(&d->mutex);
 }
@@ -96,31 +103,27 @@ void cliente_esco_coda(struct discoteca_t *d){
 //la cassiera dice "avanti!"
 void cassiera_attesa_cliente(struct discoteca_t *d){
     pthread_mutex_lock(&d->mutex);
-    //printf("%s", "AAA");
     d->disponibilita_cassa = CASSA_DISPONIBILE;
-    //printf("%s", "BBB");
-    //pthread_mutex_unlock(&d->mutex);
-    //printf("%s", "CCC");
     pthread_cond_signal(&d->cassa);
-    //printf("%s", "DDD");
-    while (d->presenza_cliente != CLIENTE_PRESENTE){
-        pthread_cond_wait(&d->cassiera,&d->mutex); //SI BLOCCA QUI!!!
+    pthread_mutex_unlock(&d->mutex);
+    while(d->presenza_cliente == CLIENTE_NON_PRESENTE){
+        pthread_cond_wait(&d->cassiera,&d->mutex);
     }
-    //printf("%s", "EEE");
+    d->coda_interno--;
+    d->presenza_cliente = CLIENTE_NON_PRESENTE;
     pthread_mutex_unlock(&d->mutex);
 }
 
 //NON BLOCCANTE
 void cassiera_cliente_servito(struct discoteca_t *d){
     printf("%s", "Biglietto emesso\n");
-    //pthread_mutex_lock(&d->mutex);
+    pthread_mutex_lock(&d->mutex);
     
-    //pthread_mutex_unlock(&d->mutex);
+    pthread_mutex_unlock(&d->mutex);
 }
 
 void *cliente(void *arg){
     pthread_t tid = pthread_self();
-    //printf("Il thread corrente ha l'id: %lu\n", (unsigned long)tid);
     printf("%lu %s", (unsigned long)tid, "arriva fuori in disco\n");
     cliente_coda_fuori(&discoteca);
     printf("%lu %s", (unsigned long)tid, "entra dentro\n");
@@ -133,8 +136,8 @@ void *cliente(void *arg){
 }
 
 void *cassiera(void *arg){
-    //int i=0;
-    while(1){
+    int i=0;
+    while(i<CLIENTI_MAX_SERATA){
         cassiera_attesa_cliente(&discoteca);
 
         //DA QUI PARTE ZONA NON BLOCCANTE
@@ -142,6 +145,7 @@ void *cassiera(void *arg){
         cassiera_cliente_servito(&discoteca);
         printf("%s", "$$$\n");
         pausetta();
+        i++;
     }
 }
 
@@ -163,14 +167,16 @@ int main(){
     pthread_create(&p, &a, cassiera, (void *)"1");
 
     int i=0;
-    while(i<5){
+    while(i<CLIENTI_MAX_SERATA){
+        pausetta();
         pthread_create(&p, &a, cliente, (void *)"1");
         i++;
+        
     }
 
     pthread_attr_destroy(&a);
     /* aspetto 10 secondi prima di terminare tutti quanti */
-    sleep(5);
+    sleep(200);
     printf("%s", "Chiusura!\n");
 
     return 0;
