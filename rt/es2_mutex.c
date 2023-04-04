@@ -83,7 +83,7 @@ void EndB(struct gestore_t *g){
 
 void StartReset(struct gestore_t *g){
     pthread_mutex_lock(&g->mutex);
-    while (/*g->stato == STATO_RESET && */g->nr > 0){
+    while (g->nr > 0){
         g->cr++;
         pthread_cond_wait(&g->semRes,&g->mutex);
         g->cr--;
@@ -94,28 +94,16 @@ void StartReset(struct gestore_t *g){
     pthread_mutex_unlock(&g->mutex);
 }
 
+// NON BLOCKING PROCEDURE
 void EndReset(struct gestore_t *g){
     pthread_mutex_lock(&g->mutex);
     g->nr--;
-    /*while(g->cr > 0 && g->nr<1){
-        g->cr--;
-        pthread_cond_signal(&g->semRes);
-    }*/
     if (g->cr > 0){
-        //g->cr--; //QUI DECREMENTAVO DUE VOLTE!!!!!
-        //g->nr++;
         pthread_cond_signal(&g->semRes);
     } else if (g->ca != 0 || g->cb != 0){
-        //g->ca--; //ANCHE QUI!!!!
-        //g->na++;
         g->stato = STATO_A_O_B;
-        pthread_cond_signal(&g->semA);
-    } /*else if (g->cb != 0){ //UNIFICANDO sem questa if non serve più
-        g->cb--; //ANCHE QUI!!!!
-        //g->nb++;
-        g->stato = STATO_A_O_B;
-        pthread_cond_signal(&g->semB);
-    }*/ else {
+        pthread_cond_broadcast(&g->semA);
+    } else {
         g->stato = NESSUNO;
     }
 
@@ -132,9 +120,11 @@ void pausetta(void){
 void *A(void *arg){
     for (;;) {
         StartA(&gestore);
+        putchar(*(char *)"<");
         putchar(*(char *)"A");
         putchar(*(char *)arg);
         putchar(*(char *)"a");
+        putchar(*(char *)">");
         putchar(*(char *)"\n");
         EndA(&gestore);
         pausetta();
@@ -145,9 +135,11 @@ void *A(void *arg){
 void *B(void *arg){
     for (;;) {
         StartB(&gestore);
+        putchar(*(char *)"<");
         putchar(*(char *)"B");
         putchar(*(char *)arg);
         putchar(*(char *)"b");
+        putchar(*(char *)">");
         putchar(*(char *)"\n");
         EndB(&gestore);
         pausetta();
@@ -158,9 +150,11 @@ void *B(void *arg){
 void *Reset(void *arg){
     for (;;) {
         StartReset(&gestore);
+        putchar(*(char *)"<");
         putchar(*(char *)"R");
         putchar(*(char *)arg);
-        putchar(*(char *)"r");
+        putchar(*(char *)"b");
+        putchar(*(char *)">");
         putchar(*(char *)"\n");
         EndReset(&gestore);
         pausetta();

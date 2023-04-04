@@ -86,9 +86,11 @@ void EndA(struct gestore_t *g){
 void *A(void *arg){
     for (;;) {
         StartA(&gestore);
+        putchar(*(char *)"<");
         putchar(*(char *)"A");
         putchar(*(char *)arg);
         putchar(*(char *)"a");
+        putchar(*(char *)">");
         putchar(*(char *)"\n");
         EndA(&gestore);
         pausetta();
@@ -128,9 +130,11 @@ void EndB(struct gestore_t *g){
 void *B(void *arg){
     for (;;) {
         StartB(&gestore);
+        putchar(*(char *)"<");
         putchar(*(char *)"B");
         putchar(*(char *)arg);
         putchar(*(char *)"b");
+        putchar(*(char *)">");
         putchar(*(char *)"\n");
         EndB(&gestore);
         pausetta();
@@ -182,9 +186,11 @@ void EndReset(struct gestore_t *g){
 void *Reset(void *arg){
     for (;;) {
         StartReset(&gestore);
+        putchar(*(char *)"<");
         putchar(*(char *)"R");
         putchar(*(char *)arg);
         putchar(*(char *)"r");
+        putchar(*(char *)">");
         putchar(*(char *)"\n");
         EndReset(&gestore);
         pausetta();
