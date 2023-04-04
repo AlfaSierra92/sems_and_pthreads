@@ -151,7 +151,7 @@ int main(){
     pthread_create(&p, &a, cassiera, (void *)"1");
 
     int i=0;
-    while(i<5){
+    while(i<CLIENTI_MAX_SERATA){
         pthread_create(&p, &a, cliente, (void *)"1");
         i++;
     }
