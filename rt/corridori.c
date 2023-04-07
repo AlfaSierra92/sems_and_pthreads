@@ -127,7 +127,7 @@ void arbitro_via(struct corsa_t *corsa){
     sem_wait(&corsa->mutex);
     for (int i=0; i<N; i++){
         sem_post(&corsa->partenza);
-        //printf("Risveglio %d\n", i);
+        printf("Risveglio %d\n", i);
     }
     printf("...Go!\n");
     sem_post(&corsa->mutex);
