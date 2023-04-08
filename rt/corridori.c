@@ -164,8 +164,7 @@ void *arbitro(void *arg){
     arbitro_via(&corsa); //NON BLOCKING
     //<attendo tutti i corridori>
     pausetta();
-    //int primo = corsa.numero_primo_arrivato;
-    //int ultimo = corsa.numero_ultimo_arrivato;
+
     int primo, ultimo;
     arbitro_risultato(&corsa, &primo, &ultimo); //BLOCKING
 }
@@ -189,5 +188,5 @@ int main(){
         *arg = i;
         pthread_create(&p, &a, corridore, arg);
     }
-    sleep(100);
+    sleep(3);
 }
