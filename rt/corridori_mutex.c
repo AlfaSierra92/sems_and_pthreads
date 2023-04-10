@@ -123,6 +123,7 @@ void corridore_arrivo(struct corsa_t *corsa, int numerocorridore){
         corsa->corridori_arrivo++;
         corsa->numero_ultimo_arrivato = numerocorridore;
         pthread_cond_signal(&corsa->arbitro);
+        pthread_mutex_unlock(&corsa->mutex);
     }
     //sem_post(&corsa->mutex);
 }
@@ -152,7 +153,8 @@ void arbitro_via(struct corsa_t *corsa){
 void arbitro_risultato(struct corsa_t *corsa, int *primo, int *ultimo){
     //aspetta sul semaforo arbitro
     //fino a che N corridori arrivino sul semaforo arrivo
-    while(corsa->corridori_arrivo != N){
+    pthread_mutex_lock(&corsa->mutex);
+    while(corsa->corridori_arrivo < N){
         pthread_cond_wait(&corsa->arbitro,&corsa->mutex);
     }
 
@@ -206,5 +208,5 @@ int main(){
         *arg = i;
         pthread_create(&p, &a, corridore, arg);
     }
-    sleep(10);
+    sleep(5);
 }
