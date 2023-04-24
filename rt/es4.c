@@ -82,6 +82,7 @@ void *arbitro(void *arg){
 
         if (morra.vincitore != 0) printf("Il vincitore è il giocatore %d\n", morra.vincitore);
         else printf("Pareggio\n");
+        printf("\n");
         morra.mossa1 = morra.mossa2 = -1;
         morra.vincitore = 0;
         sem_post(&morra.mutex);
@@ -206,6 +207,7 @@ void *arbitro(void *arg){
 
         if (morra.vincitore != 0) printf("Il vincitore è il giocatore %d\n", morra.vincitore);
         else printf("Pareggio\n");
+        printf("\n");
         morra.mossa1 = morra.mossa2 = -1;
         morra.vincitore = 0;
         pthread_mutex_unlock(&morra.mutex);
