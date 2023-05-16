@@ -2,8 +2,8 @@
 Esercizio 5.
 Sembra funzionare tutto a prima botta. La consegna richiedeva di fare solo la versione con pthread ma ho usato i semafori.
 */
-#define USA_SEM
-//#define USA_PTHREAD
+//#define USA_SEM
+#define USA_PTHREAD
 
 #include <stdio.h>
 #include <semaphore.h>
@@ -100,8 +100,8 @@ void init_urna(struct urna_t *u){
     pthread_condattr_init(&c_attr);
 
     pthread_mutex_init(&u->mutex, &m_attr);
-    pthread_cond_init(&u->ho_votato, &c_att);
-    pthread_cond_init(&u->scrutinio, &c_att);
+    pthread_cond_init(&u->ho_votato, &c_attr);
+    pthread_cond_init(&u->scrutinio, &c_attr);
 
     pthread_condattr_destroy(&c_attr);
     pthread_mutexattr_destroy(&m_attr);
@@ -110,7 +110,7 @@ void init_urna(struct urna_t *u){
 }
 
 void vota(int v){
-    sem_wait(&urna.mutex);
+    pthread_mutex_lock(&urna.mutex);
     switch (v){
     case 0:
         printf("Voto 0\n");
@@ -127,11 +127,14 @@ void vota(int v){
     urna.votanti++;
 
     if (urna.n_voti0 > ELETTORI/2 || urna.n_voti1 > ELETTORI/2){
-        sem_post(&urna.mutex);
-        for(int i=0; i<ELETTORI; i++) sem_post(&urna.ho_votato);
+        pthread_mutex_unlock(&urna.mutex);
+        //for(int i=0; i<ELETTORI; i++) sem_post(&urna.ho_votato);
+        pthread_cond_broadcast(&urna.ho_votato);
     } else {
-        sem_post(&urna.mutex);
-        sem_wait(&urna.ho_votato);
+        while(urna.n_voti0 < ELETTORI/2 && urna.n_voti1 < ELETTORI/2){
+            pthread_cond_wait(&urna.ho_votato, &urna.mutex);
+        }
+        pthread_mutex_unlock(&urna.mutex);
     }
 
 }
