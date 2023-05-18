@@ -2,8 +2,8 @@
 Esercizio 6
 */
 
-#define USA_SEM
-//#define USA_PTHREAD
+//#define USA_SEM
+#define USA_PTHREAD
 
 #include <stdio.h>
 #include <semaphore.h>
@@ -12,7 +12,7 @@ Esercizio 6
 #include <stdlib.h>
 
 #define NUM_FILOSOFI 5
-#define DELAY 3
+#define DELAY 10
 
 void pausetta(void){
     struct timespec t;
@@ -60,6 +60,71 @@ void lascia_forchette(int filosofo){
     }
     printf("%d ha lasciato forchette\n", filosofo);
 }
+#endif
+
+
+#ifdef USA_PTHREAD
+struct tavolo_t{
+    pthread_mutex_t mutex;
+    pthread_cond_t forchette[NUM_FILOSOFI];
+
+    int fork[NUM_FILOSOFI]; //1 forchetta libera; 0 forchetta occupata
+} tavolo;
+
+void init_tavolo(struct tavolo_t *t){
+    pthread_mutexattr_t m_attr;
+    pthread_condattr_t c_attr;
+    pthread_mutexattr_init(&m_attr);
+    pthread_condattr_init(&c_attr);
+
+    pthread_mutex_init(&t->mutex, &m_attr);
+
+    for(int i=0; i<NUM_FILOSOFI; i++) {
+        pthread_cond_init(&t->forchette[i], &c_attr);
+        t->fork[i] = 1;
+    }
+
+    pthread_condattr_destroy(&c_attr);
+    pthread_mutexattr_destroy(&m_attr);
+}
+
+void prende_forchette(int filosofo){
+    printf("%d prende forchette\n", filosofo);
+    pthread_mutex_lock(&tavolo.mutex);
+    if (filosofo != 0){
+        while(tavolo.fork[filosofo] == 0) pthread_cond_wait(&tavolo.forchette[filosofo], &tavolo.mutex);
+        tavolo.fork[filosofo] = 0;
+        while(tavolo.fork[filosofo-1] == 0)pthread_cond_wait(&tavolo.forchette[filosofo-1], &tavolo.mutex);
+        tavolo.fork[filosofo-1] = 0;
+    } else {
+        while(tavolo.fork[NUM_FILOSOFI-1] == 0) pthread_cond_wait(&tavolo.forchette[NUM_FILOSOFI-1], &tavolo.mutex);
+        tavolo.fork[NUM_FILOSOFI-1] = 0;
+        while(tavolo.fork[filosofo] == 0) pthread_cond_wait(&tavolo.forchette[filosofo], &tavolo.mutex); 
+        tavolo.fork[filosofo] = 0;  
+    }
+    printf("%d ha preso forchette\n", filosofo);
+    pthread_mutex_unlock(&tavolo.mutex);
+    
+}
+
+void lascia_forchette(int filosofo){
+    printf("%d lascia forchette\n", filosofo);
+    pthread_mutex_lock(&tavolo.mutex);
+    if (filosofo != 0){
+        pthread_cond_signal(&tavolo.forchette[filosofo]);
+        pthread_cond_signal(&tavolo.forchette[filosofo-1]);
+        tavolo.fork[filosofo] = 1;
+        tavolo.fork[filosofo-1] = 1;
+    } else {
+        pthread_cond_signal(&tavolo.forchette[NUM_FILOSOFI-1]);
+        pthread_cond_signal(&tavolo.forchette[filosofo]);
+        tavolo.fork[NUM_FILOSOFI-1] = 1;
+        tavolo.fork[filosofo] = 1;
+    }
+    pthread_mutex_unlock(&tavolo.mutex);
+    printf("%d ha lasciato forchette\n", filosofo);
+}
+#endif
 
 void *filosofo(void *arg){
     int tempo;
@@ -86,11 +151,6 @@ void *filosofo(void *arg){
     }
     
 }
-#endif
-
-#ifdef USA_PTHREAD
-//toDO
-#endif
 
 int main(){
     pthread_attr_t a;
