@@ -116,10 +116,10 @@ void lascia_forchette(int filosofo){
         tavolo.fork[filosofo] = 1;
         tavolo.fork[filosofo-1] = 1;
     } else {
-        pthread_cond_signal(&tavolo.forchette[NUM_FILOSOFI-1]);
-        pthread_cond_signal(&tavolo.forchette[filosofo]);
         tavolo.fork[NUM_FILOSOFI-1] = 1;
         tavolo.fork[filosofo] = 1;
+        pthread_cond_signal(&tavolo.forchette[NUM_FILOSOFI-1]);
+        pthread_cond_signal(&tavolo.forchette[filosofo]);
     }
     pthread_mutex_unlock(&tavolo.mutex);
     printf("%d ha lasciato forchette\n", filosofo);
@@ -174,7 +174,7 @@ int main(){
 
     pthread_attr_destroy(&a);
 
-    sleep(120);
+    sleep(5);
 
     return 0;
 }
