@@ -129,8 +129,9 @@ void lascia_forchette(int filosofo){
 void *filosofo(void *arg){
     int tempo;
     int filosofo = *(int *) arg;
+    int ciclo = 0;
 
-    while(1){
+    while(ciclo<50){
         tempo = 0;
         printf("%d sta pensando\n", filosofo);
         while(tempo<DELAY){
@@ -140,7 +141,7 @@ void *filosofo(void *arg){
         }
 
         prende_forchette(*(int *)arg);
-        printf("%d sta mangiando\n", filosofo);
+        printf("%d sta mangiando per la %desima volta\n", filosofo, ciclo);
         while(tempo<DELAY){
             //MANGIA
             pausetta();
@@ -148,6 +149,7 @@ void *filosofo(void *arg){
         }
         lascia_forchette(*(int *)arg);
         pausetta();
+        ciclo++;
     }
     
 }
