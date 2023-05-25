@@ -32,7 +32,7 @@ struct codaclienti_t{
 
 void init_codaclienti(struct codaclienti_t *codaclienti){
     sem_init(&codaclienti->mutex, 0, 1);
-    sem_init(&codaclienti->pizzasem, 0, 0);
+    sem_init(&codaclienti->pizzasem, 0, 1);
     //sem_init(&codaclienti->clienti, 0, 0);
     sem_init(&codaclienti->cassa, 0, 0);
 
@@ -57,7 +57,7 @@ void ordina_pizze(struct codaclienti_t *codaclienti, int numeropizze, int client
         }
     }
     sem_post(&codaclienti->mutex);
-    sem_post(&codaclienti->pizzasem);
+    //sem_post(&codaclienti->pizzasem);
     //sem_wait(&codaclienti->clienti[posto]);
 }
 
@@ -74,8 +74,16 @@ void prossima_pizza(struct codaclienti_t *codaclienti){
     sem_wait(&codaclienti->mutex);
     //cerca il cliente con il minor numero di pizze nell'ordine
     if(codaclienti->scelgo_cliente == SI){
+        /*
         codaclienti->cliente_scelto = codaclienti->ordini[0][0];
         codaclienti->numero_pizze = codaclienti->ordini[0][1];
+        */
+        for(int i=0;i<N;i++){
+            if(codaclienti->ordini[i][1] != -1){
+                codaclienti->cliente_scelto = codaclienti->ordini[i][0];
+                codaclienti->numero_pizze = codaclienti->ordini[i][1];
+            }
+        }
         int posto = 0;
         for(int i=0;i<N;i++){
             if(codaclienti->ordini[i][1] < codaclienti->numero_pizze && codaclienti->ordini[i][1] != -1){
@@ -89,6 +97,7 @@ void prossima_pizza(struct codaclienti_t *codaclienti){
         codaclienti->ordini[posto][1] = -1;*/
         codaclienti->scelgo_cliente = NO;
         for(int i=0;i<codaclienti->numero_pizze;i++) sem_post(&codaclienti->pizzasem);
+        sleep(3);
     }
     sem_post(&codaclienti->mutex);
 
@@ -123,7 +132,7 @@ void *cliente(void *arg){
     int numerocliente = *(int *) arg;
     while(1){
         int numeropizze = rand()%10+1;
-        printf("vado in pizzeria\n");
+        printf("vado in pizzeria per %d pizze\n", numeropizze);
         ordina_pizze(&coda, numeropizze, numerocliente); //NON BLOCCANTE
         printf("attendi\n");
         ritira_pizze(&coda, numerocliente); //BLOCCANTE
@@ -153,14 +162,16 @@ int main(){
 
     pthread_attr_setdetachstate(&a, PTHREAD_CREATE_DETACHED);
 
-    pthread_create(&p, &a, pizzaiolo, NULL);
+    
 
     for (int i=0; i<N; i++){
         int *arg = malloc(sizeof(*arg));
         *arg = i;
         pthread_create(&p, &a, cliente, arg);
-        //pausetta();
+        pausetta();
     }
+
+    pthread_create(&p, &a, pizzaiolo, NULL);
 
     pthread_attr_destroy(&a);
 
