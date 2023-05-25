@@ -38,7 +38,7 @@ void init_codaclienti(struct codaclienti_t *codaclienti){
 
     for(int i=0;i<N;i++){
         sem_init(&codaclienti->clienti[i], 0, 0);
-        for(int j=0;j<2;j++) codaclienti->ordini[i][j] = 0;
+        for(int j=0;j<2;j++) codaclienti->ordini[i][j] = -1;
     }
         
     codaclienti->cliente_scelto = codaclienti->numero_pizze = -1;
@@ -46,16 +46,18 @@ void init_codaclienti(struct codaclienti_t *codaclienti){
 }
 
 void ordina_pizze(struct codaclienti_t *codaclienti, int numeropizze, int cliente){
-    int posto = 0;
+    //int posto = 0;
     sem_wait(&codaclienti->mutex);
     for(int i=0;i<N;i++){
         if(codaclienti->ordini[i][0] == -1){
             codaclienti->ordini[i][0] = cliente;
             codaclienti->ordini[i][1] = numeropizze;
-            posto = i;
+            //posto = i;
+            break;
         }
     }
     sem_post(&codaclienti->mutex);
+    sem_post(&codaclienti->pizzasem);
     //sem_wait(&codaclienti->clienti[posto]);
 }
 
@@ -76,15 +78,15 @@ void prossima_pizza(struct codaclienti_t *codaclienti){
         codaclienti->numero_pizze = codaclienti->ordini[0][1];
         int posto = 0;
         for(int i=0;i<N;i++){
-            if(codaclienti->ordini[i][1] < codaclienti->numero_pizze){
+            if(codaclienti->ordini[i][1] < codaclienti->numero_pizze && codaclienti->ordini[i][1] != -1){
                 codaclienti->cliente_scelto = codaclienti->ordini[i][0];
                 codaclienti->numero_pizze = codaclienti->ordini[i][1];
                 posto = i;
             }
         }
         //elimino cliente dalla coda poichè lo sto servendo
-        codaclienti->ordini[posto][0] = -1;
-        codaclienti->ordini[posto][1] = -1;
+        /*codaclienti->ordini[posto][0] = -1;
+        codaclienti->ordini[posto][1] = -1;*/
         codaclienti->scelgo_cliente = NO;
         for(int i=0;i<codaclienti->numero_pizze;i++) sem_post(&codaclienti->pizzasem);
     }
@@ -104,7 +106,12 @@ void consegna_pizza(struct codaclienti_t *codaclienti){
 
         int posto = -1;
         for(int i=0;i<N;i++){
-            if(codaclienti->ordini[i][0] == codaclienti->cliente_scelto) posto = i;
+            if(codaclienti->ordini[i][0] == codaclienti->cliente_scelto) {
+                posto = i;
+                //elimino cliente dalla coda poichè lo sto servendo
+                codaclienti->ordini[posto][0] = -1;
+                codaclienti->ordini[posto][1] = -1;
+            }
         }
         codaclienti->cliente_scelto = -1;
         sem_post(&codaclienti->clienti[posto]);
@@ -115,12 +122,12 @@ void consegna_pizza(struct codaclienti_t *codaclienti){
 void *cliente(void *arg){
     int numerocliente = *(int *) arg;
     while(1){
-        int numeropizze = rand()%10;
-        //vado in pizzeria
+        int numeropizze = rand()%10+1;
+        printf("vado in pizzeria\n");
         ordina_pizze(&coda, numeropizze, numerocliente); //NON BLOCCANTE
-        //attendi
+        printf("attendi\n");
         ritira_pizze(&coda, numerocliente); //BLOCCANTE
-        //torna a casa
+        printf("%d torna a casa\n",numerocliente);
     }
     return 0;
 }
@@ -128,7 +135,7 @@ void *cliente(void *arg){
 void *pizzaiolo(void *arg){
     while(1){
         prossima_pizza(&coda); //UNA SOLA PIZZA - BLOCCANTE
-        //impasto e cottura pizza
+        printf("Impasto e cottura pizza\n");
         consegna_pizza(&coda); //UNA SOLA PIZZA - NON BLOCCANTE
     }
     return 0;
