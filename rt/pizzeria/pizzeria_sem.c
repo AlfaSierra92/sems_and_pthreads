@@ -97,19 +97,19 @@ void prossima_pizza(struct codaclienti_t *codaclienti){
         /*codaclienti->ordini[posto][0] = -1;
         codaclienti->ordini[posto][1] = -1;*/
         codaclienti->scelgo_cliente = NO;
+        printf("Pizzaiolo: scelgo il cliente %d con %d pizze\n", codaclienti->cliente_scelto, codaclienti->numero_pizze);
         for(int i=0;i<codaclienti->numero_pizze;i++) sem_post(&codaclienti->pizzasem);
         sleep(3);
     }
+    codaclienti->numero_pizze--;
     sem_post(&codaclienti->mutex);
-
-    
 }
 
 
 void consegna_pizza(struct codaclienti_t *codaclienti){
     //servi il cliente prescelto decrementando ad ogni ciclo le pizze
     sem_wait(&codaclienti->mutex);
-    codaclienti->numero_pizze--;
+    //codaclienti->numero_pizze--;
     if(codaclienti->numero_pizze == 0){
         codaclienti->numero_pizze = -1;
         codaclienti->scelgo_cliente = SI;
@@ -133,11 +133,11 @@ void *cliente(void *arg){
     int numerocliente = *(int *) arg;
     while(1){
         int numeropizze = rand()%10+1;
-        printf("Io cliente %d vado in pizzeria per %d pizze\n", numerocliente, numeropizze);
+        printf("Cliente: io %d vado in pizzeria per %d pizze\n", numerocliente, numeropizze);
         ordina_pizze(&coda, numeropizze, numerocliente); //NON BLOCCANTE
-        printf("%d attende\n", numerocliente);
+        printf("Cliente: io %d attendo\n", numerocliente);
         ritira_pizze(&coda, numerocliente); //BLOCCANTE
-        printf("%d torna a casa\n",numerocliente);
+        printf("Cliente: io %d torna a casa\n",numerocliente);
     }
     return 0;
 }
@@ -145,7 +145,7 @@ void *cliente(void *arg){
 void *pizzaiolo(void *arg){
     while(1){
         prossima_pizza(&coda); //UNA SOLA PIZZA - BLOCCANTE
-        printf("Impasto e cottura pizza\n");
+        printf("Pizzaiolo: impasto e cottura pizza\n");
         consegna_pizza(&coda); //UNA SOLA PIZZA - NON BLOCCANTE
     }
     return 0;
