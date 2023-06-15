@@ -72,6 +72,7 @@ void ritira_pizze(struct codaclienti_t *codaclienti, int cliente){
 void prossima_pizza(struct codaclienti_t *codaclienti){
     sem_wait(&codaclienti->pizzasem);
     sem_wait(&codaclienti->mutex);
+    
     //cerca il cliente con il minor numero di pizze nell'ordine
     if(codaclienti->scelgo_cliente == SI){
         /*
@@ -132,9 +133,9 @@ void *cliente(void *arg){
     int numerocliente = *(int *) arg;
     while(1){
         int numeropizze = rand()%10+1;
-        printf("vado in pizzeria per %d pizze\n", numeropizze);
+        printf("Io cliente %d vado in pizzeria per %d pizze\n", numerocliente, numeropizze);
         ordina_pizze(&coda, numeropizze, numerocliente); //NON BLOCCANTE
-        printf("attendi\n");
+        printf("%d attende\n", numerocliente);
         ritira_pizze(&coda, numerocliente); //BLOCCANTE
         printf("%d torna a casa\n",numerocliente);
     }
@@ -175,7 +176,7 @@ int main(){
 
     pthread_attr_destroy(&a);
 
-    sleep(150);
+    sleep(15);
 
     return 0;
 }
