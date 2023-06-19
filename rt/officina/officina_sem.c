@@ -70,12 +70,13 @@ void *cliente(void *arg){
     //arriva nell'ufficio per effettuare riparazione r
     int r = *(int *) arg;
     pthread_t thread_id = pthread_self();
-    printf("%lu arrivo per riparazione %d\n", thread_id, r);
+    printf("CLIENTE: %lu arrivo per riparazione %d\n", thread_id, r);
     cliente_arrivo(&o, r); //BLOCCANTE
     //leggo un giornale
-    printf("%lu leggo il giornale\n", thread_id);
+    printf("CLIENTE: %lu leggo il giornale\n", thread_id);
     cliente_attesafineservizio(&o); //BLOCCANTE
     //torno a casa
+    printf("CLIENTE: %lu torno a casa\n", thread_id);
     return 0;
 }
 
@@ -86,10 +87,10 @@ void *operaio(void *arg){
     for(;;){
         operaio_attesacliente(&o, r); //BLOCCANTE
         //riparo
-        printf("%lu aggiusto %d\n", thread_id, r);
+        printf("OPERAIO: %lu aggiusto %d\n", thread_id, r);
         operaio_fineservizio(&o); //NON BLOCCANTE
         //pausa
-        printf("Pausa caffè\n");
+        printf("OPERAIO: Pausa caffè\n");
         pausetta();
     }
 }
