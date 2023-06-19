@@ -69,10 +69,11 @@ void operaio_fineservizio(struct officina_t *officina){
 void *cliente(void *arg){
     //arriva nell'ufficio per effettuare riparazione r
     int r = *(int *) arg;
-    printf("Arrivo per riparazione %d\n", r);
+    pthread_t thread_id = pthread_self();
+    printf("%lu arrivo per riparazione %d\n", thread_id, r);
     cliente_arrivo(&o, r); //BLOCCANTE
     //leggo un giornale
-    printf("Leggo il giornale\n");
+    printf("%lu leggo il giornale\n", thread_id);
     cliente_attesafineservizio(&o); //BLOCCANTE
     //torno a casa
     return 0;
@@ -81,10 +82,11 @@ void *cliente(void *arg){
 void *operaio(void *arg){
     //r indica la riparazione che l'operaio è in grado di fare
     int r = *(int *) arg;
+    pthread_t thread_id = pthread_self();
     for(;;){
         operaio_attesacliente(&o, r); //BLOCCANTE
         //riparo
-        printf("Aggiusto %d\n", r);
+        printf("%lu aggiusto %d\n", thread_id, r);
         operaio_fineservizio(&o); //NON BLOCCANTE
         //pausa
         printf("Pausa caffè\n");
