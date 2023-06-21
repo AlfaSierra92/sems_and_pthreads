@@ -26,14 +26,14 @@ struct palestra_t{
     sem_t persone[P]; //un semafoto per ogni persona
 
     int prenotazioni[P]; //ogni atleta prenota l'attr. succ.
-    int num_attrezzi[N];
+    //int attrezzi[N];
 } palestra;
 
 void init_palestra(struct palestra_t *p){
     sem_init(&p->mutex, 0, 1);
     for(int i=0; i<N; i++) {
-        sem_init(&p->attrezzi[i], 0, 0);
-        p->num_attrezzi[i] = M;
+        sem_init(&p->attrezzi[i], 0, M);
+        //p->attrezzi[i] = 0;
     }
     for(int i=0; i<P; i++) {
         sem_init(&p->persone[i], 0, E);
@@ -42,13 +42,9 @@ void init_palestra(struct palestra_t *p){
 }
 
 void usaattrezzo(struct palestra_t *p, int numeropersona, int tipoattrezzo){
-    printf("TRAINER: ci sono %d dell'attrezzo %d\n", p->num_attrezzi[tipoattrezzo], tipoattrezzo);
-    
-    if (p->prenotazioni[numeropersona] != tipoattrezzo || p->num_attrezzi[tipoattrezzo] == 0){ 
+    if (p->prenotazioni[numeropersona] != tipoattrezzo) 
         sem_wait(&p->attrezzi[tipoattrezzo]);
-    }
     sem_wait(&p->mutex);
-    p->num_attrezzi[tipoattrezzo]--;
     p->prenotazioni[numeropersona] = -1;
     sem_post(&p->mutex);
     pausetta();
@@ -64,13 +60,8 @@ void prenota(struct palestra_t *p, int numeropersona, int tipoattrezzo){
 }
 
 void fineuso(struct palestra_t *p, int numeropersona, int tipoattrezzo){
-    printf("ATLETA: %d libero attrezzo %d\n\n", numeropersona, tipoattrezzo);
-    int val = -1;
-    sem_getvalue(&p->attrezzi[tipoattrezzo], &val);
-    sem_wait(&p->mutex);
+    printf("ATLETA: %d libero attrezzo %d\n", numeropersona, tipoattrezzo);
     sem_post(&p->attrezzi[tipoattrezzo]);
-    p->num_attrezzi[tipoattrezzo]++;
-    sem_post(&p->mutex);
 }
 
 void *persona(void *arg){
