@@ -42,14 +42,14 @@ void init_palestra(struct palestra_t *p){
 }
 
 void usaattrezzo(struct palestra_t *p, int numeropersona, int tipoattrezzo){
-    int tmp;
-    sem_getvalue(&p->attrezzi[tipoattrezzo], &tmp);
-    printf("\nTRAINER: ci sono %d dell'attrezzo %d\n\n", /*p->num_attrezzi[tipoattrezzo]*/tmp, tipoattrezzo);
-    if (p->prenotazioni[numeropersona] != -1) { 
+    int value;
+    sem_getvalue(&p->attrezzi[tipoattrezzo], &value);
+    printf("\nTRAINER: ci sono %d dell'attrezzo %d\n\n", /*p->num_attrezzi[tipoattrezzo]*/value, tipoattrezzo);
+    if (p->prenotazioni[numeropersona] != -1) { //l'atleta ha effettuato la prenotazione in precedenza
         printf("ATLETA: %d uso attrezzo %d\n", numeropersona, tipoattrezzo);
         sem_wait(&p->attrezzi[tipoattrezzo]);
         sem_wait(&p->mutex);
-        p->attrezzo_in_uso[numeropersona] = tipoattrezzo;
+        p->attrezzo_in_uso[numeropersona] = tipoattrezzo; //indica l'attrezzo utilizzato
         //p->num_attrezzi[tipoattrezzo]--;
         p->prenotazioni[numeropersona] = -1; //rimuovo prenotazione
         sem_post(&p->mutex);
@@ -62,34 +62,33 @@ void usaattrezzo(struct palestra_t *p, int numeropersona, int tipoattrezzo){
 
 void prenota(struct palestra_t *p, int numeropersona, int tipoattrezzo){
     sem_wait(&p->mutex);
-    int tmp;
-    sem_getvalue(&p->attrezzi[tipoattrezzo], &tmp);
-    if(/*p->num_attrezzi[tipoattrezzo]*/ tmp != 0) {
+    int value;
+    sem_getvalue(&p->attrezzi[tipoattrezzo], &value);
+    if(/*p->num_attrezzi[tipoattrezzo]*/value != 0) {
         p->prenotazioni[numeropersona] = tipoattrezzo;
         printf("ATLETA: %d prenoto attrezzo %d\n", numeropersona, tipoattrezzo);
     } else { //se non ci sono attrezzi disponibili, non prenota e quindi non effettuerà l'esercizio
         printf("ATLETA: %d NON prenoto attrezzo %d\n", numeropersona, tipoattrezzo);
     }
     sem_post(&p->mutex);
+    pausetta();
 }
 
 void fineuso(struct palestra_t *p, int numeropersona, int tipoattrezzo){
     printf("ATLETA: %d libero attrezzo %d\n\n", numeropersona, tipoattrezzo);
     sem_wait(&p->mutex);
-    int tmp;
+    int value=0;
     if (p->attrezzo_in_uso[numeropersona] != -1){
-        sem_post(&p->attrezzi[tipoattrezzo]);
-        //int tmp;
-        sem_getvalue(&p->attrezzi[tipoattrezzo], &tmp);
-        printf("DEBUG1: %d\n", tmp);
+        sem_getvalue(&p->attrezzi[tipoattrezzo], &value);
+        if (value < M) sem_post(&p->attrezzi[tipoattrezzo]);
+        printf("DEBUG1: %d\n", value);
         //p->num_attrezzi[tipoattrezzo]++;
-        p->attrezzo_in_uso[numeropersona] = -1;
+        p->attrezzo_in_uso[numeropersona] = -1; //non usa più l'attrezzo
     } else {
-        //placeholder
-        //printf("Placeholder\n");
-        printf("DEBUG: %d %d %d\n", numeropersona, tipoattrezzo, /*p->num_attrezzi[tipoattrezzo]*/tmp);
+        printf("DEBUG2: %d %d %d\n", numeropersona, tipoattrezzo, /*p->num_attrezzi[tipoattrezzo]*/value);
     }
     sem_post(&p->mutex);
+    pausetta();
 }
 
 void *persona(void *arg){
@@ -129,7 +128,7 @@ int main(){
 
     pthread_attr_destroy(&a);
 
-    sleep(30);
+    sleep(300);
 
     return 0;
 }
