@@ -32,7 +32,7 @@ struct palestra_t{
 void init_palestra(struct palestra_t *p){
     sem_init(&p->mutex, 0, 1);
     for(int i=0; i<N; i++) {
-        sem_init(&p->attrezzi[i], 0, M);
+        sem_init(&p->attrezzi[i], 0, 0);
         p->num_attrezzi[i] = M;
     }
     for(int i=0; i<P; i++) {
@@ -42,19 +42,20 @@ void init_palestra(struct palestra_t *p){
 }
 
 void usaattrezzo(struct palestra_t *p, int numeropersona, int tipoattrezzo){
-    int value;
-    sem_getvalue(&p->attrezzi[tipoattrezzo], &value);
-    printf("\nTRAINER: ci sono %d dell'attrezzo %d\n\n", /*p->num_attrezzi[tipoattrezzo]*/value, tipoattrezzo);
-    if (p->prenotazioni[numeropersona] != -1) { //l'atleta ha effettuato la prenotazione in precedenza
+    printf("\nTRAINER: ci sono %d dell'attrezzo %d\n\n", p->num_attrezzi[tipoattrezzo], tipoattrezzo);
+    sem_wait(&p->mutex);
+    if (p->prenotazioni[numeropersona] != -1 && p->num_attrezzi[tipoattrezzo] > 0) { //l'atleta ha effettuato la prenotazione in precedenza
+        //sem_wait(&p->mutex);
         printf("ATLETA: %d uso attrezzo %d\n", numeropersona, tipoattrezzo);
-        sem_wait(&p->attrezzi[tipoattrezzo]);
-        sem_wait(&p->mutex);
+        sem_post(&p->attrezzi[tipoattrezzo]);
         p->attrezzo_in_uso[numeropersona] = tipoattrezzo; //indica l'attrezzo utilizzato
         p->num_attrezzi[tipoattrezzo]--;
         p->prenotazioni[numeropersona] = -1; //rimuovo prenotazione
         sem_post(&p->mutex);
+        sem_wait(&p->attrezzi[tipoattrezzo]);
     } else { //se non ha prenotato in precedenza l'attrezzo, salta l'esercizio
         printf("ATLETA: %d NON uso attrezzo %d\n", numeropersona, tipoattrezzo);
+        sem_post(&p->mutex);
     }
     pausetta();
 
@@ -62,10 +63,9 @@ void usaattrezzo(struct palestra_t *p, int numeropersona, int tipoattrezzo){
 
 void prenota(struct palestra_t *p, int numeropersona, int tipoattrezzo){
     sem_wait(&p->mutex);
-    int value;
-    sem_getvalue(&p->attrezzi[tipoattrezzo], &value);
-    if(p->num_attrezzi[tipoattrezzo] != 0) {
+    if(p->num_attrezzi[tipoattrezzo] > 0) {
         p->prenotazioni[numeropersona] = tipoattrezzo;
+        //p->num_attrezzi[tipoattrezzo]--;
         printf("ATLETA: %d prenoto attrezzo %d\n", numeropersona, tipoattrezzo);
     } else { //se non ci sono attrezzi disponibili, non prenota e quindi non effettuerà l'esercizio
         printf("ATLETA: %d NON prenoto attrezzo %d\n", numeropersona, tipoattrezzo);
@@ -77,16 +77,15 @@ void prenota(struct palestra_t *p, int numeropersona, int tipoattrezzo){
 void fineuso(struct palestra_t *p, int numeropersona, int tipoattrezzo){
     sem_wait(&p->mutex);
     printf("ATLETA: %d libero attrezzo %d\n\n", numeropersona, tipoattrezzo);
-    int value=0;
     if (p->attrezzo_in_uso[numeropersona] != -1){
-        sem_getvalue(&p->attrezzi[tipoattrezzo], &value);
-        if (value < M) sem_post(&p->attrezzi[tipoattrezzo]);
-        printf("DEBUG1: %d\n", value);
+        //printf("DEBUG1: %d\n", p->num_attrezzi[tipoattrezzo]);
+        sem_post(&p->attrezzi[tipoattrezzo]);
         p->num_attrezzi[tipoattrezzo]++;
         p->attrezzo_in_uso[numeropersona] = -1; //non usa più l'attrezzo
     } else {
-        printf("DEBUG2: %d %d %d\n", numeropersona, tipoattrezzo, /*p->num_attrezzi[tipoattrezzo]*/value);
+        //printf("DEBUG2: %d %d %d\n", numeropersona, tipoattrezzo, p->num_attrezzi[tipoattrezzo]);
     }
+    if (p->attrezzo_in_uso[numeropersona] == -10) p->attrezzo_in_uso[numeropersona] = -1;
     sem_post(&p->mutex);
     pausetta();
 }
@@ -97,7 +96,7 @@ void *persona(void *arg){
     int numeropersona = *(int*)arg;
 
     for (int i = E; i>0; i--){
-        //printf("ATLETA: %d faccio esercizio %d\n", numeropersona, i);
+        printf("ATLETA: %d faccio esercizio numero %d\n", numeropersona, i);
         usaattrezzo(&palestra, numeropersona, attrezzocorrente);
         if (i != 0) prenota(&palestra, numeropersona, prossimoattrezzo);
         fineuso(&palestra, numeropersona, attrezzocorrente);
