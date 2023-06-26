@@ -44,7 +44,7 @@ void init_palestra(struct palestra_t *p){
 void usaattrezzo(struct palestra_t *p, int numeropersona, int tipoattrezzo){
     printf("\nTRAINER: ci sono %d dell'attrezzo %d\n\n", p->num_attrezzi_disp[tipoattrezzo], tipoattrezzo);
     sem_wait(&p->mutex);
-    if (p->prenotazioni_atleta[numeropersona] != -1 || p->num_attrezzi_disp[tipoattrezzo] > 0){
+    if (p->prenotazioni_atleta[numeropersona] == tipoattrezzo || p->num_attrezzi_disp[tipoattrezzo] > 0){
         printf("ATLETA [%d] uso attrezzo %d\n", numeropersona, tipoattrezzo);
 
         sem_post(&p->attrezzi[tipoattrezzo]);
@@ -55,7 +55,7 @@ void usaattrezzo(struct palestra_t *p, int numeropersona, int tipoattrezzo){
         p->coda[tipoattrezzo]++;
     }
 
-    if (p->prenotazioni_atleta[numeropersona] != -1) p->coda[tipoattrezzo]--;
+    if (p->prenotazioni_atleta[numeropersona] != tipoattrezzo) p->coda[tipoattrezzo]--;
 
     sem_post(&p->mutex);
     sem_wait(&p->attrezzi[tipoattrezzo]);
