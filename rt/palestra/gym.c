@@ -25,7 +25,6 @@ struct palestra_t{
     sem_t attrezzi[N]; //un semaforo per ogni attrezzo
 
     int prenotazioni_atleta[P]; //ogni atleta prenota l'attr. succ.
-    //int atleta_attrezzo_in_uso[P]; //tiene conto dell'attrezzo usato
     int num_attrezzi_disp[N];
     int coda[N];
 } palestra;
@@ -39,12 +38,10 @@ void init_palestra(struct palestra_t *p){
     }
     for(int i=0; i<P; i++) {
         p->prenotazioni_atleta[i] = -1;
-        //p->atleta_attrezzo_in_uso[i] = -1;
     }
 }
 
 void usaattrezzo(struct palestra_t *p, int numeropersona, int tipoattrezzo){
-    //todo
     printf("\nTRAINER: ci sono %d dell'attrezzo %d\n\n", p->num_attrezzi_disp[tipoattrezzo], tipoattrezzo);
     sem_wait(&p->mutex);
     if (p->prenotazioni_atleta[numeropersona] != -1 || p->num_attrezzi_disp[tipoattrezzo] > 0){
@@ -53,20 +50,18 @@ void usaattrezzo(struct palestra_t *p, int numeropersona, int tipoattrezzo){
         sem_post(&p->attrezzi[tipoattrezzo]);
         p->prenotazioni_atleta[numeropersona] = -1;
         p->num_attrezzi_disp[tipoattrezzo]--;
-        //p->atleta_attrezzo_in_uso[numeropersona] = tipoattrezzo;
+
     } else {
         p->coda[tipoattrezzo]++;
     }
 
     if (p->prenotazioni_atleta[numeropersona] != -1) p->coda[tipoattrezzo]--;
 
-    //p->atleta_attrezzo_in_uso[numeropersona] = tipoattrezzo;
     sem_post(&p->mutex);
     sem_wait(&p->attrezzi[tipoattrezzo]);
 }
 
 void prenota(struct palestra_t *p, int numeropersona, int tipoattrezzo){
-    //todo
     sem_wait(&p->mutex);
     if (p->num_attrezzi_disp[tipoattrezzo] > 0){
         
@@ -82,7 +77,6 @@ void fineuso(struct palestra_t *p, int numeropersona, int tipoattrezzo){
 
     sem_wait(&p->mutex);
     printf("ATLETA [%d] libero attrezzo %d\n\n", numeropersona, tipoattrezzo);
-    //p->atleta_attrezzo_in_uso[numeropersona] = -1;
 
     if (p->coda[tipoattrezzo] > 0) {
         p->coda[tipoattrezzo]--;
@@ -90,7 +84,6 @@ void fineuso(struct palestra_t *p, int numeropersona, int tipoattrezzo){
     }
     else p->num_attrezzi_disp[tipoattrezzo]++;
     
-    //sem_post(&p->attrezzi[tipoattrezzo]);
     sem_post(&p->mutex);
 }
 
@@ -132,7 +125,7 @@ int main(){
 
     pthread_attr_destroy(&a);
 
-    sleep(300);
+    sleep(15);
 
     return 0;
 }
