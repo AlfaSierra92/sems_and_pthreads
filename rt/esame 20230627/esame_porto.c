@@ -21,7 +21,7 @@ void pausetta(void){
 }
 
 struct porto_t{
-    sem_t mutex;
+    sem_t mutex; //mutex per sezioni critiche
     sem_t entrata; //coda per l'ingresso nel porto
     sem_t uscita; //coda per l'uscita nel porto
 
@@ -51,13 +51,13 @@ void entrata_richiesta(struct porto_t *porto){
         porto->coda_in++;                                                               //altrimenti si mette in coda per entrare
     }
     sem_post(&porto->mutex);
-    sem_wait(&porto->entrata);
+    sem_wait(&porto->entrata);                                                          //qui il thread si blocca a meno che le condizioni per entrare siano verificate
 }
 
 void entrata_ok(struct porto_t *porto){
     sem_wait(&porto->mutex);
     porto->in_entrata--;
-    if (porto->coda_out != 0 && porto->in_uscita <= 2){                                 //col transito in porto, faccio uscire una barca in coda, se esiste
+    if (porto->coda_out != 0 && porto->in_uscita <= 2){                                 //col transito in porto, faccio uscire una barca in coda, se esiste (causa priorità)
         porto->coda_out--;                                                              //decremento la coda
         porto->in_uscita++;                                                             //segnalo che una barca sta uscendo
         porto->posti_occupati--;                                                        //e ovviamente libero il posto
@@ -66,9 +66,9 @@ void entrata_ok(struct porto_t *porto){
 
     if (porto->in_uscita == 0 && porto->coda_in != 0 && porto->in_entrata < 2){         //se nessuno esce, faccio entrare
         if (porto->posti_occupati < N){                                                 //(a patto che ci siano posti liberi)
-            porto->coda_in--;
-            porto->in_entrata++;
-            porto->posti_occupati++;
+            porto->coda_in--;                                                           //decremento la coda
+            porto->in_entrata++;                                                        //segnalo che una barca sta entrando
+            porto->posti_occupati++;                                                    //e ovviamente occupo il posto
             sem_post(&porto->entrata);
         }
     }
@@ -87,7 +87,7 @@ void uscita_richiesta(struct porto_t *porto){
         porto->coda_out++;                                                              //altrimenti si mette in coda per uscire
     }
     sem_post(&porto->mutex);
-    sem_wait(&porto->uscita);
+    sem_wait(&porto->uscita);                                                           //qui il thread si blocca a meno che le condizioni per uscire siano verificate
 }
 
 void uscita_ok(struct porto_t *porto){
