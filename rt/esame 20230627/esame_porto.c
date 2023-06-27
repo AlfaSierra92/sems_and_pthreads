@@ -63,6 +63,7 @@ void entrata_ok(struct porto_t *porto){
         porto->posti_occupati--;                                                        //e ovviamente libero il posto
         sem_post(&porto->uscita);
     }
+
     if (porto->in_uscita == 0 && porto->coda_in != 0 && porto->in_entrata < 2){         //se nessuno esce, faccio entrare
         if (porto->posti_occupati < N){                                                 //(a patto che ci siano posti liberi)
             porto->coda_in--;
@@ -71,7 +72,6 @@ void entrata_ok(struct porto_t *porto){
             sem_post(&porto->entrata);
         }
     }
-    printf("[Capitaneria] Ci sono %d posti liberi\n", N-porto->posti_occupati);
     sem_post(&porto->mutex);
 }
 
@@ -93,13 +93,13 @@ void uscita_richiesta(struct porto_t *porto){
 void uscita_ok(struct porto_t *porto){
     sem_wait(&porto->mutex);
     porto->in_uscita--;
-    if (porto->coda_out != 0 && porto->in_uscita <= 2){                                 //stessa e identica logica utilizzata per la funzione entrata_ok()
+    if (porto->coda_out != 0 && porto->in_uscita <= 2){                                 //stessa e identica logica utilizzata per la funzione entrata_ok(...)
         porto->coda_out--;
         porto->in_uscita++;
         porto->posti_occupati--;
         sem_post(&porto->uscita);
     }
-    printf("[Capitaneria] Ci sono %d posti liberi\n", N-porto->posti_occupati);
+
     if (porto->in_uscita == 0 && porto->coda_in != 0 && porto->in_entrata < 2){
         if (porto->posti_occupati < N){
             porto->coda_in--;
@@ -135,6 +135,8 @@ void *barca(void *arg){
 
     //vai altro porto
     printf("[%d] vado altro porto\n\n", numero_barca);
+
+    pthread_exit(0);
 }
 
 int main(){
