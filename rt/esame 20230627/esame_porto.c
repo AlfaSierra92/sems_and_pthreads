@@ -1,7 +1,6 @@
 /*
-
+ANTONIO SOLIDA - Mat. 178507
 Esame RTES 27 giugno 2023
-
 */
 
 #include <stdio.h>
