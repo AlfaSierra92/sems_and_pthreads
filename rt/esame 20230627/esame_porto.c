@@ -1,5 +1,7 @@
 /*
-Far Harbor
+
+Esame RTES 27 giugno 2023
+
 */
 
 #include <stdio.h>
@@ -20,10 +22,11 @@ void pausetta(void){
 
 struct porto_t{
     sem_t mutex;
-    sem_t entrata, uscita;
+    sem_t entrata; //coda per l'ingresso nel porto
+    sem_t uscita; //coda per l'uscita nel porto
 
-    int coda_in, coda_out, posti_occupati;
-    int in_uscita, in_entrata;
+    int coda_in, coda_out, posti_occupati; //rispettivamente, numero di barche in coda per entrare, uscire e posti occupati
+    int in_uscita, in_entrata; //conteggia quante barche escono o entrano (al fine di controllare che non transitino più di 2 navi contemporaneamente)
 } porto;
 
 void init_porto(struct porto_t *porto){
@@ -37,12 +40,15 @@ void init_porto(struct porto_t *porto){
 
 void entrata_richiesta(struct porto_t *porto){
     sem_wait(&porto->mutex);
-    if (porto->posti_occupati < N && porto->in_uscita == 0 && porto->in_entrata <= 2){
-        porto->posti_occupati++;
-        sem_post(&porto->entrata);
-        porto->in_entrata++;
+
+    //if (porto->posti_occupati < N && porto->in_uscita == 0 && porto->in_entrata <= 2) //è più corretto minore di 2 altrimenti le barche in entrata
+                                                                                        //potrebbero essere 3
+    if (porto->posti_occupati < N && porto->in_uscita == 0 && porto->in_entrata < 2){ //per entrare, bisogna rispettare 3 condizioni:
+        porto->posti_occupati++;                                                        //1. ci siano posti liberi nel porto;
+        sem_post(&porto->entrata);                                                      //2. nessuno stia uscendo
+        porto->in_entrata++;                                                            //3. ci siano meno di 2 barche in entrata
     } else {
-        porto->coda_in++;
+        porto->coda_in++;                                                               //altrimenti si mette in coda per entrare
     }
     sem_post(&porto->mutex);
     sem_wait(&porto->entrata);
@@ -51,31 +57,34 @@ void entrata_richiesta(struct porto_t *porto){
 void entrata_ok(struct porto_t *porto){
     sem_wait(&porto->mutex);
     porto->in_entrata--;
-    if (porto->coda_out != 0 && porto->in_uscita <= 2){
-        porto->coda_out--;
-        porto->in_uscita++;
-        porto->posti_occupati--;
+    if (porto->coda_out != 0 && porto->in_uscita <= 2){                                 //col transito in porto, faccio uscire una barca in coda, se esiste
+        porto->coda_out--;                                                              //decremento la coda
+        porto->in_uscita++;                                                             //segnalo che una barca sta uscendo
+        porto->posti_occupati--;                                                        //e ovviamente libero il posto
         sem_post(&porto->uscita);
     }
-    if (porto->in_uscita == 0 && porto->coda_in != 0 && porto->in_entrata < 2){
-        if (porto->posti_occupati < N){
+    if (porto->in_uscita == 0 && porto->coda_in != 0 && porto->in_entrata < 2){         //se nessuno esce, faccio entrare
+        if (porto->posti_occupati < N){                                                 //(a patto che ci siano posti liberi)
             porto->coda_in--;
             porto->in_entrata++;
             porto->posti_occupati++;
             sem_post(&porto->entrata);
         }
     }
+    printf("[Capitaneria] Ci sono %d posti liberi\n", N-porto->posti_occupati);
     sem_post(&porto->mutex);
 }
 
 void uscita_richiesta(struct porto_t *porto){
     sem_wait(&porto->mutex);
-    if (porto->in_entrata == 0 && porto->in_uscita <=2){
-        porto->posti_occupati--;
-        sem_post(&porto->uscita);
+    //if (porto->in_entrata == 0 && porto->in_uscita <= 2){                             //è più corretto minore di 2 altrimenti le barche in uscita
+                                                                                        //potrebbero essere 3
+    if (porto->in_entrata == 0 && porto->in_uscita < 2){                                //per uscire, bisogna rispettare 2 condizioni:
+        porto->posti_occupati--;                                                        //1. nessuno stia entrando;
+        sem_post(&porto->uscita);                                                       //2. ci siano meno di 2 barche in uscita
         porto->in_uscita++;
     } else {
-        porto->coda_out++;
+        porto->coda_out++;                                                              //altrimenti si mette in coda per uscire
     }
     sem_post(&porto->mutex);
     sem_wait(&porto->uscita);
@@ -84,12 +93,13 @@ void uscita_richiesta(struct porto_t *porto){
 void uscita_ok(struct porto_t *porto){
     sem_wait(&porto->mutex);
     porto->in_uscita--;
-    if (porto->coda_out != 0 && porto->in_uscita < 2){
+    if (porto->coda_out != 0 && porto->in_uscita <= 2){                                 //stessa e identica logica utilizzata per la funzione entrata_ok()
         porto->coda_out--;
         porto->in_uscita++;
         porto->posti_occupati--;
         sem_post(&porto->uscita);
     }
+    printf("[Capitaneria] Ci sono %d posti liberi\n", N-porto->posti_occupati);
     if (porto->in_uscita == 0 && porto->coda_in != 0 && porto->in_entrata < 2){
         if (porto->posti_occupati < N){
             porto->coda_in--;
@@ -133,20 +143,19 @@ int main(){
     int id_barche[B];
 
     init_porto(&porto);
-
     srand(time(NULL));
 
     pthread_attr_init(&a);
-    pthread_attr_setdetachstate(&a, PTHREAD_CREATE_DETACHED);
 
     for(int i=0;i<B;i++){
         id_barche[i] = i;
         pthread_create(&barche[i], &a, barca, &id_barche[i]);
     }
 
-    pthread_attr_destroy(&a);
-
-    sleep(30);
+    for(int i=0;i<B;i++){
+        void* ret;
+        pthread_join(barche[i], &ret);
+    }
 
     return 0;
 }
